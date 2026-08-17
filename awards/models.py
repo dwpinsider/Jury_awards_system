@@ -82,6 +82,24 @@ class Nomination(models.Model):
     reference_code = models.CharField(max_length=50, blank=True, help_text='Internal tracking code, optional')
     is_visible_to_jury = models.BooleanField(default=True)
 
+    AWARD_TIER_CHOICES = [
+        ('', 'Not decided yet'),
+        ('winner', 'Winner'),
+        ('gold', 'Gold'),
+        ('silver', 'Silver'),
+        ('bronze', 'Bronze'),
+        ('finalist', 'Finalist'),
+        ('shortlisted', 'Shortlisted'),
+    ]
+    award_tier = models.CharField(
+        max_length=20, choices=AWARD_TIER_CHOICES, blank=True, default='',
+        help_text='Set once the secretariat has decided the result for this nomination.',
+    )
+    award_notes = models.TextField(
+        blank=True,
+        help_text='Optional internal notes about the final decision (not shown to jurors).',
+    )
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
@@ -92,13 +110,13 @@ class Nomination(models.Model):
         return f'{self.organization_name} — {self.category.name}'
 
     def average_score(self):
-        reviews = self.jury_reviews.all()
+        reviews = self.jury_reviews.filter(is_submitted=True)
         if not reviews:
             return None
         return round(sum(r.total_score() for r in reviews) / len(reviews), 2)
 
     def review_count(self):
-        return self.jury_reviews.count()
+        return self.jury_reviews.filter(is_submitted=True).count()
 
 
 class NominationStat(models.Model):

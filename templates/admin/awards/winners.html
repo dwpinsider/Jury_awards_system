@@ -1,0 +1,33 @@
+{% extends "admin/base_site.html" %}
+
+{% block content %}
+<p>Only nominations with a Result already set (via the nomination edit page or the <a href="../rankings/">Rankings</a> tool). This is the clean, publish-ready winners list.</p>
+
+{% for group in groups %}
+<h2>{{ group.category.name }}</h2>
+<table style="width:100%; border-collapse: collapse; margin-bottom: 30px;">
+  <thead>
+    <tr style="text-align:left; border-bottom: 1px solid #ccc;">
+      <th style="padding:6px;">Result</th>
+      <th style="padding:6px;">Organization</th>
+      <th style="padding:6px;">Nominee</th>
+      <th style="padding:6px;">Avg Score</th>
+      <th style="padding:6px;"></th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for nom in group.nominations %}
+    <tr style="border-bottom: 1px solid #eee;">
+      <td style="padding:6px; font-weight:bold;">{{ nom.get_award_tier_display }}</td>
+      <td style="padding:6px;">{{ nom.organization_name }}</td>
+      <td style="padding:6px;">{{ nom.nominee_full_name|default:"—" }}</td>
+      <td style="padding:6px;">{% if nom.average_score is not None %}{{ nom.average_score }}/100{% else %}—{% endif %}</td>
+      <td style="padding:6px;"><a href="{% url 'admin:awards_nomination_change' nom.pk %}">Edit →</a></td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% empty %}
+<p>No results have been decided yet. Use the <a href="../rankings/">Rankings</a> page to review scores, then set each nomination's Result field.</p>
+{% endfor %}
+{% endblock %}

@@ -2,6 +2,7 @@ from django.contrib import admin, messages
 from django.urls import path, reverse
 from django.shortcuts import redirect
 from django.template.response import TemplateResponse
+from django.db.models import Q
 import csv
 from django.http import HttpResponse
 
@@ -124,8 +125,11 @@ class NominationDocumentInline(admin.TabularInline):
 @admin.register(Nomination)
 class NominationAdmin(admin.ModelAdmin):
     change_list_template = 'admin/awards/nomination_change_list.html'
-    list_display = ('organization_name', 'category', 'nominee_full_name', 'is_visible_to_jury', 'review_count', 'created_at')
-    list_filter = ('category', 'is_visible_to_jury')
+    list_display = (
+        'organization_name', 'category', 'nominee_full_name', 'award_tier_badge',
+        'is_visible_to_jury', 'review_count', 'average_score', 'created_at',
+    )
+    list_filter = ('category', 'award_tier', 'is_visible_to_jury')
     search_fields = ('organization_name', 'nominee_full_name', 'contact_person', 'email')
     inlines = [NominationStatInline, NominationDocumentInline]
     actions = [export_nominations_as_csv]
@@ -142,12 +146,19 @@ class NominationAdmin(admin.ModelAdmin):
             'project_title', 'project_highlights', 'key_achievements',
             'reason_for_nomination', 'business_impact',
         )}),
+        ('Result (secretariat only — not shown to jury)', {'fields': ('award_tier', 'award_notes')}),
     )
+
+    @admin.display(description='Result')
+    def award_tier_badge(self, obj):
+        return obj.get_award_tier_display() if obj.award_tier else '—'
 
     def get_urls(self):
         urls = super().get_urls()
         custom = [
             path('import-csv/', self.admin_site.admin_view(self.import_csv), name='awards_nomination_import_csv'),
+            path('rankings/', self.admin_site.admin_view(self.rankings_view), name='awards_nomination_rankings'),
+            path('winners/', self.admin_site.admin_view(self.winners_view), name='awards_nomination_winners'),
         ]
         return custom + urls
 
@@ -165,3 +176,58 @@ class NominationAdmin(admin.ModelAdmin):
             opts=self.model._meta,
         )
         return TemplateResponse(request, 'admin/awards/import_csv.html', context)
+
+    def rankings_view(self, request):
+        """Every nomination, grouped by category, ranked by average jury score.
+        Read-only — this is the tool the secretariat uses to *decide* winners.
+        The category dropdown filter (?category=<id>) narrows the list.
+        """
+        category_id = request.GET.get('category')
+        categories = Category.objects.all().order_by('order', 'name')
+        selected_category = None
+        if category_id:
+            selected_category = categories.filter(pk=category_id).first()
+
+        groups = []
+        cats_to_show = [selected_category] if selected_category else categories
+        for cat in cats_to_show:
+            noms = list(cat.nominations.filter(is_visible_to_jury=True))
+            ranked = sorted(
+                noms,
+                key=lambda n: (n.average_score() is None, -(n.average_score() or 0)),
+            )
+            if ranked:
+                groups.append({'category': cat, 'nominations': ranked})
+
+        context = dict(
+            self.admin_site.each_context(request),
+            title='Rankings — by Average Jury Score',
+            groups=groups,
+            categories=categories,
+            selected_category=selected_category,
+            opts=self.model._meta,
+        )
+        return TemplateResponse(request, 'admin/awards/rankings.html', context)
+
+    def winners_view(self, request):
+        """Only nominations that already have an award_tier set — the
+        published-looking final results list, grouped by category."""
+        categories = Category.objects.all().order_by('order', 'name')
+        tier_order = {code: i for i, (code, _label) in enumerate(Nomination.AWARD_TIER_CHOICES)}
+
+        groups = []
+        for cat in categories:
+            noms = list(
+                cat.nominations.filter(is_visible_to_jury=True).exclude(award_tier='')
+            )
+            noms.sort(key=lambda n: tier_order.get(n.award_tier, 99))
+            if noms:
+                groups.append({'category': cat, 'nominations': noms})
+
+        context = dict(
+            self.admin_site.each_context(request),
+            title='Winners List',
+            groups=groups,
+            opts=self.model._meta,
+        )
+        return TemplateResponse(request, 'admin/awards/winners.html', context)

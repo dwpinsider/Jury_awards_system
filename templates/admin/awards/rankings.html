@@ -1,0 +1,51 @@
+{% extends "admin/base_site.html" %}
+
+{% block content %}
+<p>Every nomination, ranked by average jury score within its category — submitted (final) reviews only, draft scores are not counted. Use this to decide who wins, then set each nomination's <strong>Result</strong> field on its edit page.</p>
+
+<form method="get" style="margin-bottom: 20px;">
+  <label for="category-filter">Filter to one category:</label>
+  <select id="category-filter" name="category" onchange="this.form.submit()">
+    <option value="">— All categories —</option>
+    {% for cat in categories %}
+    <option value="{{ cat.pk }}" {% if selected_category and selected_category.pk == cat.pk %}selected{% endif %}>{{ cat.name }}</option>
+    {% endfor %}
+  </select>
+</form>
+
+{% for group in groups %}
+<h2>{{ group.category.name }}</h2>
+<table style="width:100%; border-collapse: collapse; margin-bottom: 30px;">
+  <thead>
+    <tr style="text-align:left; border-bottom: 1px solid #ccc;">
+      <th style="padding:6px;">Rank</th>
+      <th style="padding:6px;">Organization</th>
+      <th style="padding:6px;">Nominee</th>
+      <th style="padding:6px;">Avg Score</th>
+      <th style="padding:6px;">Reviews</th>
+      <th style="padding:6px;">Current Result</th>
+      <th style="padding:6px;"></th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for nom in group.nominations %}
+    <tr style="border-bottom: 1px solid #eee;">
+      <td style="padding:6px;">{{ forloop.counter }}</td>
+      <td style="padding:6px;">{{ nom.organization_name }}</td>
+      <td style="padding:6px;">{{ nom.nominee_full_name|default:"—" }}</td>
+      <td style="padding:6px; font-weight:bold;">
+        {% if nom.average_score is not None %}{{ nom.average_score }}/100{% else %}<span style="color:#999;">No submitted reviews yet</span>{% endif %}
+      </td>
+      <td style="padding:6px;">{{ nom.review_count }}</td>
+      <td style="padding:6px;">
+        {% if nom.award_tier %}<strong>{{ nom.get_award_tier_display }}</strong>{% else %}<span style="color:#999;">Not decided</span>{% endif %}
+      </td>
+      <td style="padding:6px;"><a href="{% url 'admin:awards_nomination_change' nom.pk %}">Edit result →</a></td>
+    </tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% empty %}
+<p>No nominations to rank yet.</p>
+{% endfor %}
+{% endblock %}

@@ -15,22 +15,22 @@
 </div>
 
 <div class="grid" style="margin:28px 0;">
-  <div class="stat-card">
+  <a href="{% url 'jury:category_list' %}" class="stat-card stat-card-link">
     <div class="num">{{ category_count }}</div>
     <div class="label">Categories Assigned</div>
-  </div>
-  <div class="stat-card">
+  </a>
+  <a href="{% url 'jury:category_list' %}" class="stat-card stat-card-link">
     <div class="num">{{ total_nominations }}</div>
     <div class="label">Total Nominations</div>
-  </div>
-  <div class="stat-card">
+  </a>
+  <a href="{% url 'jury:my_reviews' %}" class="stat-card stat-card-link">
     <div class="num">{{ submitted_count }}</div>
     <div class="label">Reviews Submitted</div>
-  </div>
-  <div class="stat-card">
+  </a>
+  <a href="{% url 'jury:category_list' %}" class="stat-card stat-card-link">
     <div class="num">{{ pending_count }}</div>
     <div class="label">Pending Review</div>
-  </div>
+  </a>
 </div>
 
 <div class="card">

@@ -73,22 +73,40 @@
 </div>
 {% endif %}
 
-{% if documents %}
+{% if video_documents %}
 <div class="card">
-  <h2>Supporting Documents</h2>
+  <div class="section-label">Video</div>
+  {% for doc in video_documents %}
+  <div class="video-player-card">
+    <div class="video-title-bar">{{ doc.label }}</div>
+    <video controls preload="metadata" class="video-player">
+      <source src="{{ doc.file.url }}">
+      Your browser doesn't support embedded video. <a href="{{ doc.file.url }}" target="_blank" rel="noopener">Open the video directly</a>.
+    </video>
+  </div>
+  {% endfor %}
+</div>
+{% endif %}
+
+{% if image_documents %}
+<div class="card">
+  <div class="section-label">Pictures</div>
+  <div class="picture-grid">
+    {% for doc in image_documents %}
+    <a href="{{ doc.file.url }}" target="_blank" rel="noopener" class="picture-thumb" title="{{ doc.label }}">
+      <img src="{{ doc.file.url }}" alt="{{ doc.label }}" loading="lazy">
+    </a>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+{% if other_documents %}
+<div class="card">
+  <div class="section-label">Documents</div>
   <div class="doc-grid">
-    {% for doc in documents %}
-      {% if doc.file_type == 'image' %}
-        <a href="{{ doc.file.url }}" target="_blank" rel="noopener" class="doc-tile doc-tile-image">
-          <img src="{{ doc.file.url }}" alt="{{ doc.label }}">
-          <span class="doc-tile-label">&#128247; {{ doc.label }}</span>
-        </a>
-      {% elif doc.file_type == 'video' %}
-        <a href="{{ doc.file.url }}" target="_blank" rel="noopener" class="doc-tile doc-tile-file">
-          <span class="doc-tile-icon">&#127909;</span>
-          <span class="doc-tile-label">{{ doc.label }}</span>
-        </a>
-      {% elif doc.file_type == 'pdf' %}
+    {% for doc in other_documents %}
+      {% if doc.file_type == 'pdf' %}
         <a href="{{ doc.file.url }}" target="_blank" rel="noopener" class="doc-tile doc-tile-file">
           <span class="doc-tile-icon">&#128196;</span>
           <span class="doc-tile-label">{{ doc.label }}</span>

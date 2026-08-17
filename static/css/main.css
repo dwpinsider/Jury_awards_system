@@ -156,6 +156,18 @@ a:hover { text-decoration: underline; }
 .stat-card .num { font-size: 2.1rem; color: var(--text); font-family: Georgia, serif; }
 .stat-card .label { color: var(--muted); font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.06em; }
 
+.stat-card-link {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+  transition: border-color 0.15s, transform 0.15s;
+}
+.stat-card-link:hover {
+  border-color: #b5893c;
+  transform: translateY(-2px);
+  text-decoration: none;
+}
+
 .cat-card {
   display: block;
   background: var(--panel);
@@ -645,4 +657,61 @@ input.slider-number::-webkit-inner-spin-button {
   .stat-card .num { font-size: 1.6rem; }
   .display { font-size: 1.4rem !important; }
   h1.display { line-height: 1.25; }
+}
+
+/* --- Section labels (Video / Pictures / Documents) --- */
+.section-label {
+  color: var(--muted);
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+
+/* --- Video player --- */
+.video-player-card {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 16px;
+  background: #000000;
+}
+.video-player-card:last-child { margin-bottom: 0; }
+.video-title-bar {
+  background: #000000;
+  color: #ffffff;
+  padding: 14px 18px;
+  font-size: 1rem;
+  font-weight: 500;
+}
+.video-player {
+  width: 100%;
+  max-height: 520px;
+  display: block;
+  background: #000000;
+}
+
+/* --- Picture gallery grid --- */
+.picture-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 14px;
+}
+.picture-thumb {
+  display: block;
+  aspect-ratio: 1 / 1;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+}
+.picture-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 0.2s ease;
+}
+.picture-thumb:hover img {
+  transform: scale(1.05);
 }
