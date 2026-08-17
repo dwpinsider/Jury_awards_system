@@ -79,10 +79,25 @@
   {% for doc in video_documents %}
   <div class="video-player-card">
     <div class="video-title-bar">{{ doc.label }}</div>
-    <video controls preload="metadata" class="video-player">
-      <source src="{{ doc.file.url }}">
-      Your browser doesn't support embedded video. <a href="{{ doc.file.url }}" target="_blank" rel="noopener">Open the video directly</a>.
-    </video>
+    {% if doc.youtube_embed_url %}
+      <iframe class="video-player video-iframe" src="{{ doc.youtube_embed_url }}"
+        title="{{ doc.label }}" frameborder="0"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        allowfullscreen></iframe>
+    {% elif doc.vimeo_embed_url %}
+      <iframe class="video-player video-iframe" src="{{ doc.vimeo_embed_url }}"
+        title="{{ doc.label }}" frameborder="0"
+        allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>
+    {% elif doc.video_url %}
+      <div class="video-fallback-link">
+        <a href="{{ doc.video_url }}" target="_blank" rel="noopener">&#9654; Watch video (opens in new tab) →</a>
+      </div>
+    {% else %}
+      <video controls preload="metadata" class="video-player">
+        <source src="{{ doc.file.url }}">
+        Your browser doesn't support embedded video. <a href="{{ doc.file.url }}" target="_blank" rel="noopener">Open the video directly</a>.
+      </video>
+    {% endif %}
   </div>
   {% endfor %}
 </div>

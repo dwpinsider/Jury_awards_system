@@ -120,6 +120,7 @@ class NominationStatInline(admin.TabularInline):
 class NominationDocumentInline(admin.TabularInline):
     model = NominationDocument
     extra = 1
+    fields = ('label', 'file', 'video_url')
 
 
 @admin.register(Nomination)

@@ -1,4 +1,5 @@
 import os
+import re
 
 from django.db import models
 from django.core.validators import FileExtensionValidator
@@ -143,25 +144,59 @@ VIDEO_EXTENSIONS = {'mov', 'mp4'}
 
 class NominationDocument(models.Model):
     """Supporting file(s) uploaded for a nomination — shown to the jury as a
-    clickable link (or thumbnail, for images). Accepts PDF, images
-    (gif/jpg/jpeg/png), and video (mov/mp4)."""
+    clickable link (or thumbnail/player, for images/video). Accepts either an
+    uploaded PDF, image (gif/jpg/jpeg/png), or video (mov/mp4) — OR a link to
+    an externally-hosted video (YouTube, Vimeo, etc.) instead of an upload."""
 
     nomination = models.ForeignKey(Nomination, on_delete=models.CASCADE, related_name='documents')
     label = models.CharField(max_length=255, default='Supporting Document')
     file = models.FileField(
         upload_to='nominations/%Y/%m/',
+        blank=True,
         validators=[FileExtensionValidator(allowed_extensions=ALLOWED_DOCUMENT_EXTENSIONS)],
-        help_text='Accepted formats: PDF, GIF, JPEG, PNG, MOV, MP4.',
+        help_text='Accepted formats: PDF, GIF, JPEG, PNG, MOV, MP4. Leave blank if using a Video URL instead.',
+    )
+    video_url = models.URLField(
+        blank=True,
+        help_text='YouTube (or Vimeo) link, if not uploading a video file directly. Leave blank if using File instead.',
     )
     uploaded_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f'{self.label} — {self.nomination.organization_name}'
 
+    def clean(self):
+        from django.core.exceptions import ValidationError
+        if not self.file and not self.video_url:
+            raise ValidationError('Provide either a file upload or a video URL.')
+        if self.file and self.video_url:
+            raise ValidationError('Provide only one: either a file upload or a video URL, not both.')
+
     def extension(self):
+        if not self.file:
+            return ''
         return os.path.splitext(self.file.name)[1].lower().lstrip('.')
 
+    def youtube_embed_url(self):
+        """Returns an embeddable https://www.youtube.com/embed/<id> URL if
+        video_url is a recognizable YouTube link, else None."""
+        if not self.video_url:
+            return None
+        match = re.search(
+            r'(?:youtube\.com/watch\?v=|youtu\.be/|youtube\.com/embed/|youtube\.com/shorts/)([\w-]{11})',
+            self.video_url,
+        )
+        return f'https://www.youtube.com/embed/{match.group(1)}' if match else None
+
+    def vimeo_embed_url(self):
+        if not self.video_url:
+            return None
+        match = re.search(r'vimeo\.com/(\d+)', self.video_url)
+        return f'https://player.vimeo.com/video/{match.group(1)}' if match else None
+
     def file_type(self):
+        if self.video_url:
+            return 'external_video'
         ext = self.extension()
         if ext in IMAGE_EXTENSIONS:
             return 'image'

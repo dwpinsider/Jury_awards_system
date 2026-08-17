@@ -691,6 +691,21 @@ input.slider-number::-webkit-inner-spin-button {
   display: block;
   background: #000000;
 }
+.video-iframe {
+  aspect-ratio: 16 / 9;
+  max-height: none;
+  height: auto;
+  border: none;
+}
+.video-fallback-link {
+  padding: 40px 20px;
+  text-align: center;
+  color: #ffffff;
+}
+.video-fallback-link a {
+  color: #b5893c;
+  font-weight: 600;
+}
 
 /* --- Picture gallery grid --- */
 .picture-grid {

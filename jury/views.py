@@ -87,9 +87,9 @@ def nomination_detail(request, pk):
     existing_review = JuryReview.objects.filter(juror=juror, nomination=nomination).first()
 
     all_documents = list(nomination.documents.all())
-    video_documents = [d for d in all_documents if d.file_type() == 'video']
+    video_documents = [d for d in all_documents if d.file_type() in ('video', 'external_video')]
     image_documents = [d for d in all_documents if d.file_type() == 'image']
-    other_documents = [d for d in all_documents if d.file_type() not in ('video', 'image')]
+    other_documents = [d for d in all_documents if d.file_type() not in ('video', 'external_video', 'image')]
 
     return render(request, 'jury/nomination_detail.html', {
         'juror': juror,

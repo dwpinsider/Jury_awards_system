@@ -1,0 +1,19 @@
+[
+{
+  "model": "auth.user",
+  "fields": {
+    "password": "pbkdf2_sha256$1500000$PP4tzJroCUn93lggwA3Mfa$WGFTklo0C8CCbqGnBPWLS5kxSeP17iWplPZ7B1m7M0o=",
+    "last_login": null,
+    "is_superuser": true,
+    "username": "adminawards",
+    "first_name": "",
+    "last_name": "",
+    "email": "bhavya@qna-global.com",
+    "is_staff": true,
+    "is_active": true,
+    "date_joined": "2026-08-17T19:54:47.082Z",
+    "groups": [],
+    "user_permissions": []
+  }
+}
+]
