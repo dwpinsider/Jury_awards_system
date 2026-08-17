@@ -15,26 +15,46 @@
 <div class="card">
   <form method="post">
     {% csrf_token %}
-    <div class="score-grid">
-      <div class="field">
-        <label for="{{ form.achievement_score.id_for_label }}">{{ form.achievement_score.label }}</label>
-        {{ form.achievement_score }}
-        <div class="score-max">out of 35 — weight 35%</div>
+    <div class="score-rows">
+      <div class="score-row">
+        <div class="score-row-label">
+          <label for="{{ form.achievement_score.id_for_label }}">{{ form.achievement_score.label }}</label>
+          <div class="score-max">out of 35 — weight 35%</div>
+        </div>
+        <div class="slider-row">
+          {{ form.achievement_score }}
+          <output class="slider-value" for="{{ form.achievement_score.id_for_label }}">{{ form.achievement_score.value|default:0 }}</output>
+        </div>
       </div>
-      <div class="field">
-        <label for="{{ form.methodology_score.id_for_label }}">{{ form.methodology_score.label }}</label>
-        {{ form.methodology_score }}
-        <div class="score-max">out of 20 — weight 20%</div>
+      <div class="score-row">
+        <div class="score-row-label">
+          <label for="{{ form.methodology_score.id_for_label }}">{{ form.methodology_score.label }}</label>
+          <div class="score-max">out of 20 — weight 20%</div>
+        </div>
+        <div class="slider-row">
+          {{ form.methodology_score }}
+          <output class="slider-value" for="{{ form.methodology_score.id_for_label }}">{{ form.methodology_score.value|default:0 }}</output>
+        </div>
       </div>
-      <div class="field">
-        <label for="{{ form.creativity_score.id_for_label }}">{{ form.creativity_score.label }}</label>
-        {{ form.creativity_score }}
-        <div class="score-max">out of 10 — weight 10%</div>
+      <div class="score-row">
+        <div class="score-row-label">
+          <label for="{{ form.creativity_score.id_for_label }}">{{ form.creativity_score.label }}</label>
+          <div class="score-max">out of 10 — weight 10%</div>
+        </div>
+        <div class="slider-row">
+          {{ form.creativity_score }}
+          <output class="slider-value" for="{{ form.creativity_score.id_for_label }}">{{ form.creativity_score.value|default:0 }}</output>
+        </div>
       </div>
-      <div class="field">
-        <label for="{{ form.execution_score.id_for_label }}">{{ form.execution_score.label }}</label>
-        {{ form.execution_score }}
-        <div class="score-max">out of 35 — weight 35%</div>
+      <div class="score-row">
+        <div class="score-row-label">
+          <label for="{{ form.execution_score.id_for_label }}">{{ form.execution_score.label }}</label>
+          <div class="score-max">out of 35 — weight 35%</div>
+        </div>
+        <div class="slider-row">
+          {{ form.execution_score }}
+          <output class="slider-value" for="{{ form.execution_score.id_for_label }}">{{ form.execution_score.value|default:0 }}</output>
+        </div>
       </div>
     </div>
 
@@ -53,4 +73,20 @@
     </div>
   </form>
 </div>
+
+<script>
+  (function () {
+    var sliders = document.querySelectorAll('.score-slider');
+    sliders.forEach(function (slider) {
+      var output = slider.parentElement.querySelector('.slider-value');
+      var sync = function () {
+        output.textContent = slider.value;
+        var pct = ((slider.value - slider.min) / (slider.max - slider.min)) * 100;
+        slider.style.setProperty('--fill-pct', pct + '%');
+      };
+      slider.addEventListener('input', sync);
+      sync();
+    });
+  })();
+</script>
 {% endblock %}

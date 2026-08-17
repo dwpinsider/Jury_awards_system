@@ -5,12 +5,13 @@ Django settings for govhr_awards project (GOV HR & Youth Awards - Jury Portal).
 import os
 from pathlib import Path
 
-
-
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-from dotenv import load_dotenv
-load_dotenv(BASE_DIR / '.env')
+try:
+    from dotenv import load_dotenv
+    load_dotenv(BASE_DIR / '.env')
+except ImportError:
+    pass  # python-dotenv not installed — fine if you're exporting env vars manually instead
 
 # SECURITY WARNING: keep the secret key used in production secret!
 # In production, set this via the DJANGO_SECRET_KEY environment variable.
