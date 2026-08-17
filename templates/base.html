@@ -5,21 +5,36 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{% block title %}Jury Portal{% endblock %} · GOV HR & Youth Awards</title>
-  <link rel="stylesheet" href="{% static 'css/main.css' %}?v=10">
+  <link rel="stylesheet" href="{% static 'css/main.css' %}?v=12">
 </head>
 <body>
 
 {% if current_juror %}
+<div class="mobile-topbar">
+  <button id="menuToggle" class="menu-toggle" aria-label="Open menu">&#9776;</button>
+  <div class="mobile-logo">GOV HR AWARDS</div>
+</div>
+<div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
 <div class="shell">
-  <aside class="sidebar">
+  <aside class="sidebar" id="sidebar">
     <div class="logo">
       <div class="logo-mark">G</div>
       <div class="logo-text">GOV HR AWARDS<span>JURY PORTAL</span></div>
     </div>
 
     <div class="sidebar-juror">
-      <div class="name">{{ current_juror.full_name }}</div>
-      <div class="role">{{ current_juror.title|default:"Jury Member" }}</div>
+      <div class="sidebar-juror-row">
+        {% if current_juror.photo %}
+          <img src="{{ current_juror.photo.url }}" alt="{{ current_juror.full_name }}" class="sidebar-avatar">
+        {% else %}
+          <div class="sidebar-avatar sidebar-avatar-fallback">{{ current_juror.full_name|slice:":1" }}</div>
+        {% endif %}
+        <div>
+          <div class="name">{{ current_juror.full_name }}</div>
+          <div class="role">{{ current_juror.title|default:"Jury Member" }}</div>
+        </div>
+      </div>
     </div>
 
     <nav>
@@ -56,6 +71,33 @@
     </div>
   </main>
 </div>
+
+<script>
+  (function () {
+    var sidebar = document.getElementById('sidebar');
+    var backdrop = document.getElementById('sidebarBackdrop');
+    var toggle = document.getElementById('menuToggle');
+
+    function closeSidebar() {
+      sidebar.classList.remove('open');
+      backdrop.classList.remove('open');
+    }
+    function openSidebar() {
+      sidebar.classList.add('open');
+      backdrop.classList.add('open');
+    }
+
+    toggle.addEventListener('click', function () {
+      if (sidebar.classList.contains('open')) { closeSidebar(); } else { openSidebar(); }
+    });
+    backdrop.addEventListener('click', closeSidebar);
+
+    // Closing on nav-link tap keeps the drawer from staying open after navigation
+    sidebar.querySelectorAll('nav a, .sidebar-footer a').forEach(function (link) {
+      link.addEventListener('click', closeSidebar);
+    });
+  })();
+</script>
 
 {% else %}
   {# Logged-out pages (login, verify, etc.) keep the simple centered layout #}

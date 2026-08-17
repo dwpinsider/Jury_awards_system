@@ -2,8 +2,17 @@
 {% block title %}My Dashboard{% endblock %}
 {% block nav_dashboard %}active{% endblock %}
 {% block content %}
-<h1 class="display">Welcome, {{ juror.full_name }}</h1>
-<p class="muted small">{{ juror.title }}{% if juror.organization %} · {{ juror.organization }}{% endif %}</p>
+<div style="display:flex; align-items:center; gap:16px; margin-bottom:4px;">
+  {% if juror.photo %}
+    <img src="{{ juror.photo.url }}" alt="{{ juror.full_name }}" class="welcome-avatar">
+  {% else %}
+    <div class="welcome-avatar welcome-avatar-fallback">{{ juror.full_name|slice:":1" }}</div>
+  {% endif %}
+  <div>
+    <h1 class="display" style="margin-bottom:2px;">Welcome, {{ juror.full_name }}</h1>
+    <p class="muted small" style="margin:0;">{{ juror.title }}{% if juror.organization %} · {{ juror.organization }}{% endif %}</p>
+  </div>
+</div>
 
 <div class="grid" style="margin:28px 0;">
   <div class="stat-card">
