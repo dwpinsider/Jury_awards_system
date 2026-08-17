@@ -458,6 +458,23 @@ label { display: block; margin-bottom: 6px; color: var(--muted); font-size: 0.85
   padding: 4px 6px;
 }
 
+/* Editable number box paired with each slider */
+input.slider-number {
+  border: 1px solid rgba(181, 137, 60, 0.35);
+  cursor: text;
+  -moz-appearance: textfield;
+}
+input.slider-number:focus {
+  outline: none;
+  border-color: #b5893c;
+  background: rgba(181, 137, 60, 0.16);
+}
+input.slider-number::-webkit-outer-spin-button,
+input.slider-number::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
 /* --- Score rows (one criterion per row, label left / slider right) --- */
 .score-rows {
   display: flex;

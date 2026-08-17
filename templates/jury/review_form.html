@@ -23,7 +23,7 @@
         </div>
         <div class="slider-row">
           {{ form.achievement_score }}
-          <output class="slider-value" for="{{ form.achievement_score.id_for_label }}">{{ form.achievement_score.value|default:0 }}</output>
+          <input type="number" class="slider-value slider-number" min="0" max="35" step="1" value="{{ form.achievement_score.value|default:0 }}" data-target="{{ form.achievement_score.id_for_label }}">
         </div>
       </div>
       <div class="score-row">
@@ -33,7 +33,7 @@
         </div>
         <div class="slider-row">
           {{ form.methodology_score }}
-          <output class="slider-value" for="{{ form.methodology_score.id_for_label }}">{{ form.methodology_score.value|default:0 }}</output>
+          <input type="number" class="slider-value slider-number" min="0" max="20" step="1" value="{{ form.methodology_score.value|default:0 }}" data-target="{{ form.methodology_score.id_for_label }}">
         </div>
       </div>
       <div class="score-row">
@@ -43,7 +43,7 @@
         </div>
         <div class="slider-row">
           {{ form.creativity_score }}
-          <output class="slider-value" for="{{ form.creativity_score.id_for_label }}">{{ form.creativity_score.value|default:0 }}</output>
+          <input type="number" class="slider-value slider-number" min="0" max="10" step="1" value="{{ form.creativity_score.value|default:0 }}" data-target="{{ form.creativity_score.id_for_label }}">
         </div>
       </div>
       <div class="score-row">
@@ -53,7 +53,7 @@
         </div>
         <div class="slider-row">
           {{ form.execution_score }}
-          <output class="slider-value" for="{{ form.execution_score.id_for_label }}">{{ form.execution_score.value|default:0 }}</output>
+          <input type="number" class="slider-value slider-number" min="0" max="35" step="1" value="{{ form.execution_score.value|default:0 }}" data-target="{{ form.execution_score.id_for_label }}">
         </div>
       </div>
     </div>
@@ -78,14 +78,30 @@
   (function () {
     var sliders = document.querySelectorAll('.score-slider');
     sliders.forEach(function (slider) {
-      var output = slider.parentElement.querySelector('.slider-value');
-      var sync = function () {
-        output.textContent = slider.value;
+      var numberBox = slider.parentElement.querySelector('.slider-number');
+
+      var syncFromSlider = function () {
+        numberBox.value = slider.value;
         var pct = ((slider.value - slider.min) / (slider.max - slider.min)) * 100;
         slider.style.setProperty('--fill-pct', pct + '%');
       };
-      slider.addEventListener('input', sync);
-      sync();
+
+      var syncFromNumber = function () {
+        var min = parseInt(slider.min, 10);
+        var max = parseInt(slider.max, 10);
+        var val = parseInt(numberBox.value, 10);
+        if (isNaN(val)) { val = min; }
+        val = Math.max(min, Math.min(max, val));
+        numberBox.value = val;
+        slider.value = val;
+        var pct = ((val - min) / (max - min)) * 100;
+        slider.style.setProperty('--fill-pct', pct + '%');
+      };
+
+      slider.addEventListener('input', syncFromSlider);
+      numberBox.addEventListener('input', syncFromNumber);
+      numberBox.addEventListener('blur', syncFromNumber); // clamp/correct on blur too
+      syncFromSlider();
     });
   })();
 </script>
