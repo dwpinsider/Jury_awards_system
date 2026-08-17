@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Verify Code{% endblock %}
+{% block container_class %}wrap-narrow{% endblock %}
+{% block content_logged_out %}
+<div class="center" style="margin-bottom:30px;">
+  <h1 class="display">Enter Verification Code</h1>
+  <p class="muted small">We sent a 6-digit code to <strong>{{ juror.email }}</strong>. It expires in a few minutes.</p>
+</div>
+
+<div class="card">
+  <form method="post">
+    {% csrf_token %}
+    <div class="field">
+      <label for="id_code">Verification code</label>
+      {{ form.code }}
+      {% for error in form.code.errors %}<p class="small" style="color:#e69488;">{{ error }}</p>{% endfor %}
+    </div>
+    <button type="submit" class="btn btn-block">Verify & Continue</button>
+  </form>
+</div>
+
+<form method="post" action="{% url 'accounts:resend_otp' %}" class="center">
+  {% csrf_token %}
+  <button type="submit" class="btn btn-ghost btn-sm">Resend code</button>
+</form>
+<p class="center small" style="margin-top:14px;"><a href="{% url 'accounts:login' %}">Use a different email</a></p>
+{% endblock %}

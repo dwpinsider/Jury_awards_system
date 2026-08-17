@@ -1,0 +1,56 @@
+{% extends "base.html" %}
+{% block title %}Score {{ nomination.organization_name }}{% endblock %}
+{% block nav_categories %}active{% endblock %}
+{% block content %}
+<p class="small"><a href="{% url 'jury:nomination_detail' nomination.pk %}">← Back to {{ nomination.organization_name }}</a></p>
+<h1 class="display">Score This Nomination</h1>
+<p class="muted small">{{ nomination.organization_name }} — {{ category.name }}</p>
+
+{% if existing_review and existing_review.is_submitted %}
+<div class="card" style="border-color: var(--success);">
+  <p class="small" style="color: var(--success); margin:0;">You already submitted a score of {{ existing_review.total_score }}/100 for this nomination on {{ existing_review.submitted_at|date:"d M Y, H:i" }}. You may update and resubmit below.</p>
+</div>
+{% endif %}
+
+<div class="card">
+  <form method="post">
+    {% csrf_token %}
+    <div class="score-grid">
+      <div class="field">
+        <label for="{{ form.achievement_score.id_for_label }}">{{ form.achievement_score.label }}</label>
+        {{ form.achievement_score }}
+        <div class="score-max">out of 35 — weight 35%</div>
+      </div>
+      <div class="field">
+        <label for="{{ form.methodology_score.id_for_label }}">{{ form.methodology_score.label }}</label>
+        {{ form.methodology_score }}
+        <div class="score-max">out of 20 — weight 20%</div>
+      </div>
+      <div class="field">
+        <label for="{{ form.creativity_score.id_for_label }}">{{ form.creativity_score.label }}</label>
+        {{ form.creativity_score }}
+        <div class="score-max">out of 10 — weight 10%</div>
+      </div>
+      <div class="field">
+        <label for="{{ form.execution_score.id_for_label }}">{{ form.execution_score.label }}</label>
+        {{ form.execution_score }}
+        <div class="score-max">out of 35 — weight 35%</div>
+      </div>
+    </div>
+
+    <div class="field mt">
+      <label for="{{ form.comments.id_for_label }}">{{ form.comments.label }}</label>
+      {{ form.comments }}
+    </div>
+
+    {% for field in form %}
+      {% for error in field.errors %}<p class="small" style="color:#e69488;">{{ field.label }}: {{ error }}</p>{% endfor %}
+    {% endfor %}
+
+    <div class="flex-between mt">
+      <button type="submit" name="action" value="save" class="btn btn-ghost">Save Draft</button>
+      <button type="submit" name="action" value="submit" class="btn">Submit Final Score</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

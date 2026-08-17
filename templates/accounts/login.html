@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Jury Login{% endblock %}
+{% block container_class %}wrap-narrow{% endblock %}
+{% block content_logged_out %}
+<div class="center" style="margin-bottom:30px;">
+  <h1 class="display">Jury Login</h1>
+  <p class="muted small">Enter the email address you were registered with. We'll send you a one-time verification code.</p>
+</div>
+
+<div class="card">
+  <form method="post">
+    {% csrf_token %}
+    <div class="field">
+      <label for="id_email">Email address</label>
+      {{ form.email }}
+      {% for error in form.email.errors %}<p class="small" style="color:#e69488;">{{ error }}</p>{% endfor %}
+    </div>
+    <button type="submit" class="btn btn-block">Send verification code</button>
+  </form>
+</div>
+
+<p class="muted small center">Trouble logging in? Contact the awards secretariat at <a href="mailto:kevin@qnainternational.com">kevin@qnainternational.com</a>.</p>
+{% endblock %}

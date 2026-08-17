@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Non-Disclosure Agreement{% endblock %}
+{% block nav_nda %}active{% endblock %}
+{% block content %}
+<h1 class="display">Non-Disclosure Agreement</h1>
+{% if juror.nda_accepted %}
+<p class="muted small">You accepted this agreement on {{ juror.nda_accepted_at|date:"d M Y, H:i" }}.</p>
+{% else %}
+<p class="muted small">Please read and accept the NDA below before accessing nomination materials.</p>
+{% endif %}
+
+<div class="card">
+  <div class="nda-box">
+    <p><strong>Confidentiality of Nominee Materials.</strong> As a member of the GOV HR & Youth Awards judging panel, I acknowledge that all nomination content — including organizational data, project narratives, performance statistics, supporting documents, and any other materials made available to me through this portal — is confidential and proprietary to the nominating organizations.</p>
+    <p><strong>No Disclosure.</strong> I agree not to disclose, reproduce, distribute, or discuss any nomination content with any third party, including colleagues, competitors, or media, other than as required for my role as a juror.</p>
+    <p><strong>No Conflict of Interest.</strong> I confirm that I will disclose to the awards secretariat any nomination where I have a personal, professional, or financial conflict of interest, and will recuse myself from scoring that entry.</p>
+    <p><strong>Independent Judgment.</strong> I agree to evaluate each nomination independently, fairly, and solely on its merits against the published judging criteria (Achievement & Outcome, Methodology, Creativity & Innovation, Execution).</p>
+    <p><strong>Data Handling.</strong> I will not download, screenshot, or store nomination materials outside of this portal, and will not retain any materials after the judging period concludes.</p>
+    <p><strong>Duration.</strong> This agreement remains in effect indefinitely with respect to the confidential materials reviewed, regardless of my continued participation as a juror.</p>
+  </div>
+
+  {% if juror.nda_accepted %}
+  <div class="badge badge-done" style="padding: 8px 16px; font-size: 0.85rem;">&#10003; Accepted</div>
+  {% else %}
+  <form method="post">
+    {% csrf_token %}
+    <div class="checkbox-row">
+      <input type="checkbox" id="agree" name="agree">
+      <label for="agree" style="margin:0;">I have read and agree to the terms of this Non-Disclosure Agreement.</label>
+    </div>
+    <button type="submit" class="btn btn-block">Agree & Continue to Dashboard</button>
+  </form>
+  {% endif %}
+</div>
+{% endblock %}

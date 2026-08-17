@@ -1,0 +1,76 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Jury Portal{% endblock %} · GOV HR & Youth Awards</title>
+  <link rel="stylesheet" href="{% static 'css/main.css' %}?v=5">
+</head>
+<body>
+
+{% if current_juror %}
+<div class="shell">
+  <aside class="sidebar">
+    <div class="logo">
+      <div class="logo-mark">G</div>
+      <div class="logo-text">GOV HR AWARDS<span>JURY PORTAL</span></div>
+    </div>
+
+    <div class="sidebar-juror">
+      <div class="name">{{ current_juror.full_name }}</div>
+      <div class="role">{{ current_juror.title|default:"Jury Member" }}</div>
+    </div>
+
+    <nav>
+      <a href="{% url 'jury:dashboard' %}" class="{% block nav_dashboard %}{% endblock %}">
+        <span class="icon">&#9679;</span> My Dashboard
+      </a>
+      <a href="{% url 'jury:category_list' %}" class="{% block nav_categories %}{% endblock %}">
+        <span class="icon">&#9776;</span> Categories
+      </a>
+      <a href="{% url 'jury:my_reviews' %}" class="{% block nav_reviews %}{% endblock %}">
+        <span class="icon">&#9998;</span> My Reviews
+      </a>
+      <a href="{% url 'accounts:nda' %}" class="{% block nav_nda %}{% endblock %}">
+        <span class="icon">&#128196;</span> NDA
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <a href="{% url 'accounts:logout' %}">&#10148; Logout</a>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="main-content">
+      {% if messages %}
+      <ul class="messages">
+        {% for message in messages %}
+        <li class="{{ message.tags }}">{{ message }}</li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+
+      {% block content %}{% endblock %}
+    </div>
+  </main>
+</div>
+
+{% else %}
+  {# Logged-out pages (login, verify, etc.) keep the simple centered layout #}
+  <div class="{% block container_class %}wrap{% endblock %}">
+    {% if messages %}
+    <ul class="messages">
+      {% for message in messages %}
+      <li class="{{ message.tags }}">{{ message }}</li>
+      {% endfor %}
+    </ul>
+    {% endif %}
+
+    {% block content_logged_out %}{% endblock %}
+  </div>
+{% endif %}
+
+</body>
+</html>

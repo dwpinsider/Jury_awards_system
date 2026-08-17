@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}My Reviews{% endblock %}
+{% block nav_reviews %}active{% endblock %}
+{% block content %}
+<h1 class="display">My Submitted Reviews</h1>
+<p class="muted small">An overview of your scoring activity and overall judging experience so far.</p>
+
+<div class="grid" style="margin:24px 0;">
+  <div class="stat-card">
+    <div class="num">{{ submitted_count }}</div>
+    <div class="label">Reviews Submitted</div>
+  </div>
+  <div class="stat-card">
+    <div class="num">{% if overall_average %}{{ overall_average }}{% else %}—{% endif %}</div>
+    <div class="label">Average Score Given (/100)</div>
+  </div>
+</div>
+
+<div class="card" style="padding:0; overflow-x:auto;">
+  <table class="entries">
+    <thead>
+      <tr>
+        <th>Organization</th>
+        <th>Category</th>
+        <th>Achievement</th>
+        <th>Methodology</th>
+        <th>Creativity</th>
+        <th>Execution</th>
+        <th>Total</th>
+        <th>Submitted</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for review in reviews %}
+      <tr>
+        <td><a href="{% url 'jury:nomination_detail' review.nomination.pk %}">{{ review.nomination.organization_name }}</a></td>
+        <td>{{ review.nomination.category.name }}</td>
+        <td>{{ review.achievement_score }}/35</td>
+        <td>{{ review.methodology_score }}/20</td>
+        <td>{{ review.creativity_score }}/10</td>
+        <td>{{ review.execution_score }}/35</td>
+        <td class="total-score" style="font-size:1rem;">{{ review.total_score }}/100</td>
+        <td class="small muted">{{ review.submitted_at|date:"d M Y" }}</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="8" class="muted center" style="padding:30px;">You haven't submitted any reviews yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

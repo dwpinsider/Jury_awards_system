@@ -1,0 +1,29 @@
+{% extends "admin/base_site.html" %}
+
+{% block content %}
+<p>Upload a CSV or Excel (.xlsx) file with a header row in the first row of the first sheet. Expected columns:</p>
+<p><code>{{ columns|join:", " }}</code></p>
+
+<form method="post" enctype="multipart/form-data">
+  {% csrf_token %}
+  <table>
+    {{ form.as_table }}
+  </table>
+  <p>
+    <input type="submit" value="Import" class="default">
+    <a href="../" style="margin-left: 10px;">Cancel</a>
+  </p>
+</form>
+
+<h3>Notes</h3>
+<ul>
+  <li>Both CSV and Excel (.xlsx/.xlsm) files are accepted — no need to convert Excel to CSV first.</li>
+  <li>For Excel files, only the first sheet is read, and row 1 must be the column headers.</li>
+  <li>Boolean columns (e.g. <code>is_open_for_judging</code>, <code>is_visible_to_jury</code>) accept <code>true</code>/<code>false</code>, <code>1</code>/<code>0</code>, or <code>yes</code>/<code>no</code>. Leave blank to default to "true".</li>
+  {% if 'category' in columns %}
+  <li>The <code>category</code> column must exactly match an existing category name (case-insensitive). Import/create categories first if you haven't yet.</li>
+  {% endif %}
+  <li>Rows are matched to existing records by name (Categories) or by organization name within the same category (Nominations) — matches are updated in place if "update existing" is checked, otherwise skipped.</li>
+  <li>Any row-level problems are listed as warnings after the import finishes; valid rows still import even if some rows have issues.</li>
+</ul>
+{% endblock %}

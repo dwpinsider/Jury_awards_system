@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% block title %}{{ category.name }}{% endblock %}
+{% block nav_categories %}active{% endblock %}
+{% block content %}
+<p class="small"><a href="{% url 'jury:category_list' %}">← All Categories</a></p>
+<h1 class="display">{{ category.name }}</h1>
+<p class="muted small">{{ category.get_level_display }}{% if category.sector != 'na' %} · {{ category.get_sector_display }}{% endif %} — {{ nominations|length }} submitted nomination{{ nominations|length|pluralize }}</p>
+
+<div class="card" style="padding:0; overflow-x:auto;">
+  <table class="entries">
+    <thead>
+      <tr>
+        <th>Organization</th>
+        <th>Nominee</th>
+        <th>City / Country</th>
+        <th>Status</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for nomination in nominations %}
+      <tr>
+        <td>{{ nomination.organization_name }}</td>
+        <td>{{ nomination.nominee_full_name|default:"—" }}</td>
+        <td>{{ nomination.city_country|default:"—" }}</td>
+        <td>
+          {% if nomination.id in reviewed_ids %}
+          <span class="badge badge-done">Reviewed</span>
+          {% else %}
+          <span class="badge badge-pending">Pending</span>
+          {% endif %}
+        </td>
+        <td><a href="{% url 'jury:nomination_detail' nomination.pk %}" class="btn btn-ghost btn-sm">View</a></td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="5" class="muted center" style="padding:30px;">No nominations submitted in this category yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

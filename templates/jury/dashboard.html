@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}My Dashboard{% endblock %}
+{% block nav_dashboard %}active{% endblock %}
+{% block content %}
+<h1 class="display">Welcome, {{ juror.full_name }}</h1>
+<p class="muted small">{{ juror.title }}{% if juror.organization %} · {{ juror.organization }}{% endif %}</p>
+
+<div class="grid" style="margin:28px 0;">
+  <div class="stat-card">
+    <div class="num">{{ category_count }}</div>
+    <div class="label">Categories Assigned</div>
+  </div>
+  <div class="stat-card">
+    <div class="num">{{ total_nominations }}</div>
+    <div class="label">Total Nominations</div>
+  </div>
+  <div class="stat-card">
+    <div class="num">{{ submitted_count }}</div>
+    <div class="label">Reviews Submitted</div>
+  </div>
+  <div class="stat-card">
+    <div class="num">{{ pending_count }}</div>
+    <div class="label">Pending Review</div>
+  </div>
+</div>
+
+<div class="card">
+  <div class="flex-between">
+    <div>
+      <h2 style="margin:0;">Categories</h2>
+      <p class="muted small" style="margin-top:6px;">Open a category to view its submitted nominations.</p>
+    </div>
+    <a href="{% url 'jury:category_list' %}" class="btn btn-ghost btn-sm">View All Categories →</a>
+  </div>
+</div>
+
+<div class="grid">
+  {% for category in categories %}
+  <a href="{% url 'jury:nomination_list' category.slug %}" class="cat-card">
+    <span class="cat-tag">{{ category.get_level_display }}</span>
+    <h3 style="font-size:1.05rem;">{{ category.name }}</h3>
+    <div class="cat-count">{{ category.nomination_count }} nomination{{ category.nomination_count|pluralize }}</div>
+  </a>
+  {% empty %}
+  <p class="muted">No categories have been assigned to you yet.</p>
+  {% endfor %}
+</div>
+{% endblock %}

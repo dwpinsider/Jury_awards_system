@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+{% block title %}{{ nomination.organization_name }}{% endblock %}
+{% block nav_categories %}active{% endblock %}
+{% block content %}
+<p class="small"><a href="{% url 'jury:nomination_list' category.slug %}">← {{ category.name }}</a></p>
+
+<div class="flex-between" style="margin-bottom:6px;">
+  <h1 class="display" style="margin-bottom:0;">{{ nomination.organization_name }}</h1>
+  {% if existing_review and existing_review.is_submitted %}
+    <span class="badge badge-done">Reviewed — {{ existing_review.total_score }}/100</span>
+  {% else %}
+    <span class="badge badge-pending">Not yet reviewed</span>
+  {% endif %}
+</div>
+<p class="muted small">{{ category.name }}</p>
+
+<div class="card">
+  <h2>Submission Details</h2>
+  <div class="detail-row"><div class="k">Organization</div><div class="v">{{ nomination.organization_name }}</div></div>
+  {% if nomination.sector %}<div class="detail-row"><div class="k">Category / Sector</div><div class="v">{{ nomination.sector }}</div></div>{% endif %}
+  {% if nomination.city_country %}<div class="detail-row"><div class="k">City / Country</div><div class="v">{{ nomination.city_country }}</div></div>{% endif %}
+  {% if nomination.website %}<div class="detail-row"><div class="k">Website</div><div class="v"><a href="{{ nomination.website }}" target="_blank" rel="noopener">{{ nomination.website }}</a></div></div>{% endif %}
+
+  {% if nomination.nominee_full_name %}
+  <div class="detail-row"><div class="k">Nominee Full Name</div><div class="v">{{ nomination.nominee_full_name }}</div></div>
+  <div class="detail-row"><div class="k">Nominee Job Title</div><div class="v">{{ nomination.nominee_job_title|default:"—" }}</div></div>
+  <div class="detail-row"><div class="k">Nominee Address</div><div class="v">{{ nomination.nominee_address|default:"—" }}</div></div>
+  {% endif %}
+  {% if nomination.employee_headcount %}
+  <div class="detail-row"><div class="k">Employee Headcount</div><div class="v">{{ nomination.employee_headcount }}</div></div>
+  {% endif %}
+</div>
+
+{% if nomination.project_title or nomination.project_highlights %}
+<div class="card">
+  <h2>{{ nomination.project_title|default:"Project Highlights" }}</h2>
+  <p style="white-space:pre-line;">{{ nomination.project_highlights }}</p>
+</div>
+{% endif %}
+
+{% if nomination.key_achievements %}
+<div class="card">
+  <h2>Key Achievements</h2>
+  <p style="white-space:pre-line;">{{ nomination.key_achievements }}</p>
+</div>
+{% endif %}
+
+{% if nomination.reason_for_nomination %}
+<div class="card">
+  <h2>Reason for Nomination</h2>
+  <p style="white-space:pre-line;">{{ nomination.reason_for_nomination }}</p>
+</div>
+{% endif %}
+
+{% if stats %}
+<div class="card">
+  <h2>Performance Results & Statistics</h2>
+  <table class="entries">
+    <thead><tr><th>Area</th><th>Performance / Impact</th></tr></thead>
+    <tbody>
+      {% for stat in stats %}
+      <tr><td>{{ stat.area }}</td><td>{{ stat.value }}</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %}
+
+{% if nomination.business_impact %}
+<div class="card">
+  <h2>Business Impact & ROI</h2>
+  <p style="white-space:pre-line;">{{ nomination.business_impact }}</p>
+</div>
+{% endif %}
+
+{% if documents %}
+<div class="card">
+  <h2>Supporting Documents</h2>
+  <div class="doc-grid">
+    {% for doc in documents %}
+      {% if doc.file_type == 'image' %}
+        <a href="{{ doc.file.url }}" target="_blank" rel="noopener" class="doc-tile doc-tile-image">
+          <img src="{{ doc.file.url }}" alt="{{ doc.label }}">
+          <span class="doc-tile-label">&#128247; {{ doc.label }}</span>
+        </a>
+      {% elif doc.file_type == 'video' %}
+        <a href="{{ doc.file.url }}" target="_blank" rel="noopener" class="doc-tile doc-tile-file">
+          <span class="doc-tile-icon">&#127909;</span>
+          <span class="doc-tile-label">{{ doc.label }}</span>
+        </a>
+      {% elif doc.file_type == 'pdf' %}
+        <a href="{{ doc.file.url }}" target="_blank" rel="noopener" class="doc-tile doc-tile-file">
+          <span class="doc-tile-icon">&#128196;</span>
+          <span class="doc-tile-label">{{ doc.label }}</span>
+        </a>
+      {% else %}
+        <a href="{{ doc.file.url }}" target="_blank" rel="noopener" class="doc-tile doc-tile-file">
+          <span class="doc-tile-icon">&#128206;</span>
+          <span class="doc-tile-label">{{ doc.label }}</span>
+        </a>
+      {% endif %}
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
+
+<div class="card center">
+  <a href="{% url 'jury:submit_review' nomination.pk %}" class="btn">
+    {% if existing_review and existing_review.is_submitted %}View / Update My Review{% else %}Score This Nomination{% endif %}
+  </a>
+</div>
+{% endblock %}

@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Categories{% endblock %}
+{% block nav_categories %}active{% endblock %}
+{% block content %}
+<h1 class="display">Award Categories</h1>
+<p class="muted small">Select a category to view its submitted nominations.</p>
+
+<div class="tab-row mt">
+  <a href="?level=all&sector={{ active_sector }}" class="tab {% if active_level == 'all' %}active{% endif %}">All Levels</a>
+  <a href="?level=individual&sector={{ active_sector }}" class="tab {% if active_level == 'individual' %}active{% endif %}">Individual Category</a>
+  <a href="?level=organizational&sector={{ active_sector }}" class="tab {% if active_level == 'organizational' %}active{% endif %}">Organizational Level Category</a>
+</div>
+
+<div class="tab-row tab-row-sub">
+  <a href="?level={{ active_level }}&sector=all" class="tab tab-sub {% if active_sector == 'all' %}active{% endif %}">All Sectors</a>
+  <a href="?level={{ active_level }}&sector=public" class="tab tab-sub {% if active_sector == 'public' %}active{% endif %}">Public & Government Sector</a>
+  <a href="?level={{ active_level }}&sector=private" class="tab tab-sub {% if active_sector == 'private' %}active{% endif %}">Private Sector</a>
+</div>
+
+<div class="grid mt">
+  {% for category in categories %}
+  <a href="{% url 'jury:nomination_list' category.slug %}" class="cat-card">
+    <span class="cat-tag">{{ category.get_level_display }}{% if category.sector != 'na' %} · {{ category.get_sector_display }}{% endif %}</span>
+    <h3 style="font-size:1.05rem;">{{ category.name }}</h3>
+    <div class="cat-count">{{ category.total }} nomination{{ category.total|pluralize }}</div>
+  </a>
+  {% empty %}
+  <p class="muted">No categories match this filter.</p>
+  {% endfor %}
+</div>
+{% endblock %}
