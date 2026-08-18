@@ -1,11 +1,33 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.db.models import Count, Q
+from django.utils import timezone
 
 from awards.models import Category, Nomination
 from .decorators import juror_required
 from .forms import JuryReviewForm
-from .models import JuryReview
+from .models import JuryReview, RecentlyViewed
+
+
+def _score_distribution(scores):
+    """Buckets a list of total_score() values (0-100) into 4 ranges for the
+    dashboard's mini bar chart. Returns a list of dicts with a pre-computed
+    bar height percentage so the template stays simple."""
+    buckets = [
+        {'label': '0–40', 'min': 0, 'max': 40, 'count': 0},
+        {'label': '40–60', 'min': 40, 'max': 60, 'count': 0},
+        {'label': '60–80', 'min': 60, 'max': 80, 'count': 0},
+        {'label': '80–100', 'min': 80, 'max': 101, 'count': 0},
+    ]
+    for score in scores:
+        for bucket in buckets:
+            if bucket['min'] <= score < bucket['max']:
+                bucket['count'] += 1
+                break
+    highest = max((b['count'] for b in buckets), default=0)
+    for bucket in buckets:
+        bucket['height_pct'] = round((bucket['count'] / highest) * 100) if highest else 0
+    return buckets
 
 
 @juror_required
@@ -17,7 +39,27 @@ def dashboard(request):
         category__in=categories, is_visible_to_jury=True
     ).count()
     reviews = JuryReview.objects.filter(juror=juror)
-    submitted_count = reviews.filter(is_submitted=True).count()
+    submitted_reviews = reviews.filter(is_submitted=True)
+    submitted_count = submitted_reviews.count()
+    pending_count = max(total_nominations - submitted_count, 0)
+    progress_pct = round((submitted_count / total_nominations) * 100) if total_nominations else 0
+
+    score_distribution = _score_distribution([r.total_score() for r in submitted_reviews])
+
+    recent = RecentlyViewed.objects.filter(juror=juror).select_related(
+        'nomination', 'nomination__category'
+    )[:RecentlyViewed.MAX_PER_JUROR]
+
+    # Earliest upcoming deadline among this juror's open categories
+    upcoming_deadline = None
+    deadline_category = None
+    now = timezone.now()
+    for cat in categories.exclude(judging_deadline__isnull=True).order_by('judging_deadline'):
+        if cat.judging_deadline and cat.judging_deadline > now:
+            upcoming_deadline = cat.judging_deadline
+            deadline_category = cat
+            break
+    days_left = (upcoming_deadline - now).days if upcoming_deadline else None
 
     context = {
         'juror': juror,
@@ -25,7 +67,14 @@ def dashboard(request):
         'category_count': categories.count(),
         'total_nominations': total_nominations,
         'submitted_count': submitted_count,
-        'pending_count': max(total_nominations - submitted_count, 0),
+        'pending_count': pending_count,
+        'progress_pct': progress_pct,
+        'score_distribution': score_distribution,
+        'has_submitted_reviews': submitted_count > 0,
+        'recent_views': recent,
+        'upcoming_deadline': upcoming_deadline,
+        'deadline_category': deadline_category,
+        'days_left': days_left,
     }
     return render(request, 'jury/dashboard.html', context)
 
@@ -79,12 +128,45 @@ def nomination_list(request, slug):
 
 
 @juror_required
+def search_nominations(request):
+    """Search by organization name, nominee name, or category name — across
+    every category this juror has access to (not just one at a time)."""
+    juror = request.juror
+    query = request.GET.get('q', '').strip()
+    results = []
+
+    if query:
+        nominations = Nomination.objects.filter(
+            category__in=juror.categories_queryset(),
+            is_visible_to_jury=True,
+        ).filter(
+            Q(organization_name__icontains=query)
+            | Q(nominee_full_name__icontains=query)
+            | Q(category__name__icontains=query)
+        ).select_related('category').order_by('category__name', 'organization_name')
+
+        reviewed_ids = set(
+            JuryReview.objects.filter(juror=juror, nomination__in=nominations, is_submitted=True)
+            .values_list('nomination_id', flat=True)
+        )
+        results = [{'nomination': n, 'reviewed': n.id in reviewed_ids} for n in nominations]
+
+    return render(request, 'jury/search_results.html', {
+        'juror': juror,
+        'query': query,
+        'results': results,
+    })
+
+
+@juror_required
 def nomination_detail(request, pk):
     juror = request.juror
     nomination = get_object_or_404(
         Nomination, pk=pk, category__in=juror.categories_queryset(), is_visible_to_jury=True
     )
     existing_review = JuryReview.objects.filter(juror=juror, nomination=nomination).first()
+
+    RecentlyViewed.record(juror, nomination)
 
     all_documents = list(nomination.documents.all())
     video_documents = [d for d in all_documents if d.file_type() in ('video', 'external_video')]
@@ -100,6 +182,7 @@ def nomination_detail(request, pk):
         'image_documents': image_documents,
         'other_documents': other_documents,
         'existing_review': existing_review,
+        'judging_closed': not nomination.category.is_judging_open(),
     })
 
 
@@ -109,6 +192,16 @@ def submit_review(request, pk):
     nomination = get_object_or_404(
         Nomination, pk=pk, category__in=juror.categories_queryset(), is_visible_to_jury=True
     )
+
+    if not nomination.category.is_judging_open():
+        messages.error(
+            request,
+            f'Judging for "{nomination.category.name}" has closed'
+            + (f' (deadline was {nomination.category.judging_deadline:%d %b %Y, %H:%M}).' if nomination.category.judging_deadline else '.')
+            + ' Scores can no longer be submitted or changed for this category.',
+        )
+        return redirect('jury:nomination_detail', pk=nomination.pk)
+
     instance = JuryReview.objects.filter(juror=juror, nomination=nomination).first()
 
     if request.method == 'POST':

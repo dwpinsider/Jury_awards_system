@@ -83,7 +83,7 @@ def _run_import(request, import_func, columns, title, done_url_name):
 @admin.register(Category)
 class CategoryAdmin(admin.ModelAdmin):
     change_list_template = 'admin/awards/category_change_list.html'
-    list_display = ('name', 'level', 'sector', 'is_open_for_judging', 'nomination_count', 'order')
+    list_display = ('name', 'level', 'sector', 'is_open_for_judging', 'judging_deadline', 'nomination_count', 'order')
     list_filter = ('level', 'sector', 'is_open_for_judging')
     search_fields = ('name',)
     prepopulated_fields = {'slug': ('name',)}
@@ -160,6 +160,7 @@ class NominationAdmin(admin.ModelAdmin):
             path('import-csv/', self.admin_site.admin_view(self.import_csv), name='awards_nomination_import_csv'),
             path('rankings/', self.admin_site.admin_view(self.rankings_view), name='awards_nomination_rankings'),
             path('winners/', self.admin_site.admin_view(self.winners_view), name='awards_nomination_winners'),
+            path('analytics/', self.admin_site.admin_view(self.analytics_view), name='awards_nomination_analytics'),
         ]
         return custom + urls
 
@@ -232,3 +233,86 @@ class NominationAdmin(admin.ModelAdmin):
             opts=self.model._meta,
         )
         return TemplateResponse(request, 'admin/awards/winners.html', context)
+
+    def analytics_view(self, request):
+        """High-level management dashboard: overall completion, per-category
+        completion, per-juror workload, and a leaderboard of top-scoring
+        nominations. Read-only."""
+        from django.db.models import Avg, Count as DCount, F, Q as DQ
+        from accounts.models import Juror
+        from jury.models import JuryReview
+
+        categories = Category.objects.all().order_by('order', 'name')
+        nominations = Nomination.objects.filter(is_visible_to_jury=True)
+        jurors = Juror.objects.filter(is_active=True)
+        submitted_reviews = JuryReview.objects.filter(is_submitted=True)
+
+        total_categories = categories.count()
+        total_nominations = nominations.count()
+        total_jurors = jurors.count()
+        total_reviews_submitted = submitted_reviews.count()
+
+        # How many (juror, nomination) review assignments *could* exist, so we
+        # can show overall % complete rather than just a raw count.
+        possible_assignments = 0
+        for juror in jurors:
+            juror_categories = juror.categories_queryset().filter(is_open_for_judging=True)
+            possible_assignments += Nomination.objects.filter(
+                category__in=juror_categories, is_visible_to_jury=True
+            ).count()
+        overall_completion_pct = (
+            round((total_reviews_submitted / possible_assignments) * 100) if possible_assignments else 0
+        )
+
+        # Per-category completion
+        category_rows = []
+        for cat in categories:
+            cat_noms = cat.nominations.filter(is_visible_to_jury=True)
+            cat_nom_count = cat_noms.count()
+            cat_reviews = submitted_reviews.filter(nomination__in=cat_noms).count()
+            avg = submitted_reviews.filter(nomination__in=cat_noms).aggregate(
+                avg=Avg(F('achievement_score') + F('methodology_score') + F('creativity_score') + F('execution_score'))
+            )['avg']
+            category_rows.append({
+                'category': cat,
+                'nomination_count': cat_nom_count,
+                'review_count': cat_reviews,
+                'avg_score': round(avg, 1) if avg is not None else None,
+            })
+
+        # Per-juror workload
+        juror_rows = []
+        for juror in jurors:
+            juror_categories = juror.categories_queryset().filter(is_open_for_judging=True)
+            assigned = Nomination.objects.filter(category__in=juror_categories, is_visible_to_jury=True).count()
+            done = submitted_reviews.filter(juror=juror).count()
+            juror_rows.append({
+                'juror': juror,
+                'assigned': assigned,
+                'done': done,
+                'pct': round((done / assigned) * 100) if assigned else 0,
+            })
+        juror_rows.sort(key=lambda r: r['pct'])  # least-complete first, easiest to spot who needs a nudge
+
+        # Top 10 highest-scoring nominations overall (submitted reviews only)
+        top_nominations = sorted(
+            [n for n in nominations if n.review_count() > 0],
+            key=lambda n: n.average_score() or 0,
+            reverse=True,
+        )[:10]
+
+        context = dict(
+            self.admin_site.each_context(request),
+            title='Analytics',
+            total_categories=total_categories,
+            total_nominations=total_nominations,
+            total_jurors=total_jurors,
+            total_reviews_submitted=total_reviews_submitted,
+            possible_assignments=possible_assignments,
+            overall_completion_pct=overall_completion_pct,
+            category_rows=category_rows,
+            juror_rows=juror_rows,
+            top_nominations=top_nominations,
+            opts=self.model._meta,
+        )
+        return TemplateResponse(request, 'admin/awards/analytics.html', context)

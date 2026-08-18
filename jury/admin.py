@@ -3,7 +3,7 @@ import csv
 from django.contrib import admin
 from django.http import HttpResponse
 
-from .models import JuryReview
+from .models import JuryReview, RecentlyViewed
 
 
 def export_reviews_as_csv(modeladmin, request, queryset):
@@ -50,3 +50,9 @@ class JuryReviewAdmin(admin.ModelAdmin):
     search_fields = ('juror__full_name', 'juror__email', 'nomination__organization_name')
     readonly_fields = ('submitted_at', 'created_at', 'updated_at')
     actions = [export_reviews_as_csv]
+
+
+@admin.register(RecentlyViewed)
+class RecentlyViewedAdmin(admin.ModelAdmin):
+    list_display = ('juror', 'nomination', 'viewed_at')
+    list_filter = ('juror',)

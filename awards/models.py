@@ -29,6 +29,10 @@ class Category(models.Model):
     sector = models.CharField(max_length=10, choices=SECTOR_CHOICES, default=SECTOR_NA)
     description = models.TextField(blank=True)
     is_open_for_judging = models.BooleanField(default=True)
+    judging_deadline = models.DateTimeField(
+        blank=True, null=True,
+        help_text='Optional. After this date/time, jurors can no longer submit or update scores for this category — enforced automatically, not just advisory.',
+    )
     order = models.PositiveIntegerField(default=0)
 
     class Meta:
@@ -37,6 +41,16 @@ class Category(models.Model):
 
     def __str__(self):
         return self.name
+
+    def is_judging_open(self):
+        """True if the category is marked open AND (no deadline, or deadline hasn't passed)."""
+        if not self.is_open_for_judging:
+            return False
+        if self.judging_deadline:
+            from django.utils import timezone
+            if timezone.now() >= self.judging_deadline:
+                return False
+        return True
 
     def save(self, *args, **kwargs):
         if not self.slug:

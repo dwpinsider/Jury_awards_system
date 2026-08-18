@@ -14,6 +14,16 @@
   </div>
 </div>
 
+{% if days_left is not None %}
+<div class="deadline-banner {% if days_left <= 2 %}deadline-urgent{% endif %}">
+  <span class="deadline-icon">&#9200;</span>
+  <div>
+    <strong>{{ days_left }} day{{ days_left|pluralize }} left</strong> to submit scores for
+    <strong>{{ deadline_category.name }}</strong> — deadline {{ upcoming_deadline|date:"d M Y, H:i" }}.
+  </div>
+</div>
+{% endif %}
+
 <div class="grid" style="margin:28px 0;">
   <a href="{% url 'jury:category_list' %}" class="stat-card stat-card-link">
     <div class="num">{{ category_count }}</div>
@@ -31,6 +41,50 @@
     <div class="num">{{ pending_count }}</div>
     <div class="label">Pending Review</div>
   </a>
+</div>
+
+<div class="card">
+  <div class="flex-between" style="margin-bottom:10px;">
+    <h2 style="margin:0; font-size:1rem;">Your Progress</h2>
+    <span class="muted small">{{ submitted_count }} of {{ total_nominations }} reviewed</span>
+  </div>
+  <div class="progress-track">
+    <div class="progress-fill" style="width: {{ progress_pct }}%;"></div>
+  </div>
+  <div class="muted small" style="margin-top:6px; text-align:right;">{{ progress_pct }}% complete</div>
+</div>
+
+<div class="grid-2col">
+  {% if has_submitted_reviews %}
+  <div class="card">
+    <h2 style="margin:0 0 14px; font-size:1rem;">Your Score Distribution</h2>
+    <div class="chart-bars">
+      {% for bucket in score_distribution %}
+      <div class="chart-bar-col">
+        <div class="chart-bar-track">
+          <div class="chart-bar-fill" style="height: {{ bucket.height_pct }}%;"></div>
+        </div>
+        <div class="chart-bar-count">{{ bucket.count }}</div>
+        <div class="chart-bar-label">{{ bucket.label }}</div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
+
+  {% if recent_views %}
+  <div class="card">
+    <h2 style="margin:0 0 14px; font-size:1rem;">Recently Viewed</h2>
+    <div class="recent-list">
+      {% for item in recent_views %}
+      <a href="{% url 'jury:nomination_detail' item.nomination.pk %}" class="recent-item">
+        <div class="recent-item-name">{{ item.nomination.organization_name }}</div>
+        <div class="recent-item-cat muted small">{{ item.nomination.category.name }}</div>
+      </a>
+      {% endfor %}
+    </div>
+  </div>
+  {% endif %}
 </div>
 
 <div class="card">

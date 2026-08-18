@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Search{% endblock %}
+{% block content %}
+<h1 class="display">Search Nominations</h1>
+<p class="muted small">Search by organization, nominee name, or category — across every category assigned to you.</p>
+
+<form method="get" class="card" style="margin-top:16px;">
+  <div style="display:flex; gap:10px;">
+    <input type="text" name="q" value="{{ query }}" class="input" placeholder="e.g. General Pensions, Khalid Khadim..." autofocus>
+    <button type="submit" class="btn" style="flex-shrink:0;">Search</button>
+  </div>
+</form>
+
+{% if query %}
+<p class="muted small">{{ results|length }} result{{ results|length|pluralize }} for "{{ query }}"</p>
+
+<div class="card" style="padding:0; overflow-x:auto;">
+  <table class="entries">
+    <thead>
+      <tr>
+        <th>Organization</th>
+        <th>Nominee</th>
+        <th>Category</th>
+        <th>Status</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in results %}
+      <tr>
+        <td>{{ item.nomination.organization_name }}</td>
+        <td>{{ item.nomination.nominee_full_name|default:"—" }}</td>
+        <td>{{ item.nomination.category.name }}</td>
+        <td>
+          {% if item.reviewed %}
+          <span class="badge badge-done">Reviewed</span>
+          {% else %}
+          <span class="badge badge-pending">Pending</span>
+          {% endif %}
+        </td>
+        <td><a href="{% url 'jury:nomination_detail' item.nomination.pk %}" class="btn btn-ghost btn-sm">View</a></td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="5" class="muted center" style="padding:30px;">No nominations match "{{ query }}".</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %}
+{% endblock %}
