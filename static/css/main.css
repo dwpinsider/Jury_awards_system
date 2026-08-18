@@ -141,7 +141,7 @@ a:hover { text-decoration: underline; }
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
   gap: 18px;
 }
 
@@ -881,3 +881,13 @@ input.slider-number::-webkit-inner-spin-button {
 }
 .recent-item-name { font-weight: 600; font-size: 0.9rem; color: var(--text); }
 .recent-item-cat { margin-top: 2px; }
+
+/* --- Quick search row on the Categories page --- */
+.quick-search-row {
+  display: flex;
+  gap: 10px;
+  margin: 18px 0 4px;
+  max-width: 560px;
+}
+.quick-search-row .input { flex: 1; }
+.quick-search-row .btn { flex-shrink: 0; }

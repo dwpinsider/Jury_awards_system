@@ -100,7 +100,7 @@
 <div class="grid">
   {% for category in categories %}
   <a href="{% url 'jury:nomination_list' category.slug %}" class="cat-card">
-    <span class="cat-tag">{{ category.get_level_display }}</span>
+    <span class="cat-tag">{{ category.tag_level_label }}</span>
     <h3 style="font-size:1.05rem;">{{ category.name }}</h3>
     <div class="cat-count">{{ category.nomination_count }} nomination{{ category.nomination_count|pluralize }}</div>
   </a>

@@ -5,6 +5,11 @@
 <h1 class="display">Award Categories</h1>
 <p class="muted small">Select a category to view its submitted nominations.</p>
 
+<form method="get" action="{% url 'jury:search' %}" class="quick-search-row">
+  <input type="text" name="q" class="input" placeholder="Quick search — organization, nominee, or category name...">
+  <button type="submit" class="btn btn-ghost">Search</button>
+</form>
+
 <div class="tab-row mt">
   <a href="?level=all&sector={{ active_sector }}" class="tab {% if active_level == 'all' %}active{% endif %}">All Levels</a>
   <a href="?level=individual&sector={{ active_sector }}" class="tab {% if active_level == 'individual' %}active{% endif %}">Individual Category</a>
@@ -21,8 +26,8 @@
   {% for category in categories %}
   <a href="{% url 'jury:nomination_list' category.slug %}" class="cat-card">
     <div class="cat-tag-row">
-      <span class="cat-tag">{{ category.get_level_display }}</span>
-      {% if category.sector != 'na' %}<span class="cat-tag cat-tag-sector">{{ category.get_sector_display }}</span>{% endif %}
+      <span class="cat-tag">{{ category.tag_level_label }}</span>
+      {% if category.tag_sector_label %}<span class="cat-tag cat-tag-sector">{{ category.tag_sector_label }}</span>{% endif %}
     </div>
     <h3 style="font-size:1.05rem;">{{ category.name }}</h3>
     <div class="cat-count">{{ category.total }} nomination{{ category.total|pluralize }}</div>

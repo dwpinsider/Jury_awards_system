@@ -52,6 +52,20 @@ class Category(models.Model):
                 return False
         return True
 
+    def tag_level_label(self):
+        """Short version of get_level_display() — for compact card badges only.
+        The full phrase ('Organizational Level Category') is too wide to fit
+        as a single-line pill in a normal-width card."""
+        return 'Organizational' if self.level == self.LEVEL_ORGANIZATIONAL else 'Individual'
+
+    def tag_sector_label(self):
+        """Short version of get_sector_display() — for compact card badges only."""
+        if self.sector == self.SECTOR_PUBLIC:
+            return 'Public & Government'
+        if self.sector == self.SECTOR_PRIVATE:
+            return 'Private Sector'
+        return None
+
     def save(self, *args, **kwargs):
         if not self.slug:
             self.slug = slugify(self.name)[:255]
