@@ -126,6 +126,16 @@
           <span class="doc-tile-icon">&#128196;</span>
           <span class="doc-tile-label">{{ doc.label }}</span>
         </a>
+      {% elif doc.file_type == 'word' %}
+        <a href="{{ doc.file.url }}" target="_blank" rel="noopener" class="doc-tile doc-tile-file">
+          <span class="doc-tile-icon">&#128221;</span>
+          <span class="doc-tile-label">{{ doc.label }}</span>
+        </a>
+      {% elif doc.file_type == 'slides' %}
+        <a href="{{ doc.file.url }}" target="_blank" rel="noopener" class="doc-tile doc-tile-file">
+          <span class="doc-tile-icon">&#128203;</span>
+          <span class="doc-tile-label">{{ doc.label }}</span>
+        </a>
       {% else %}
         <a href="{{ doc.file.url }}" target="_blank" rel="noopener" class="doc-tile doc-tile-file">
           <span class="doc-tile-icon">&#128206;</span>

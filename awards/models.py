@@ -136,10 +136,12 @@ class NominationStat(models.Model):
         return f'{self.area}: {self.value}'
 
 
-ALLOWED_DOCUMENT_EXTENSIONS = ['pdf', 'gif', 'jpg', 'jpeg', 'png', 'mov', 'mp4']
+ALLOWED_DOCUMENT_EXTENSIONS = ['pdf', 'gif', 'jpg', 'jpeg', 'png', 'mov', 'mp4', 'docx', 'pptx']
 
 IMAGE_EXTENSIONS = {'gif', 'jpg', 'jpeg', 'png'}
 VIDEO_EXTENSIONS = {'mov', 'mp4'}
+WORD_EXTENSIONS = {'docx'}
+SLIDES_EXTENSIONS = {'pptx'}
 
 
 class NominationDocument(models.Model):
@@ -154,7 +156,7 @@ class NominationDocument(models.Model):
         upload_to='nominations/%Y/%m/',
         blank=True,
         validators=[FileExtensionValidator(allowed_extensions=ALLOWED_DOCUMENT_EXTENSIONS)],
-        help_text='Accepted formats: PDF, GIF, JPEG, PNG, MOV, MP4. Leave blank if using a Video URL instead.',
+        help_text='Accepted formats: PDF, GIF, JPEG, PNG, MOV, MP4, DOCX, PPTX. Leave blank if using a Video URL instead.',
     )
     video_url = models.URLField(
         blank=True,
@@ -204,4 +206,8 @@ class NominationDocument(models.Model):
             return 'video'
         if ext == 'pdf':
             return 'pdf'
+        if ext in WORD_EXTENSIONS:
+            return 'word'
+        if ext in SLIDES_EXTENSIONS:
+            return 'slides'
         return 'other'
