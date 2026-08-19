@@ -17,6 +17,7 @@
 {% if judging_closed %}
 <ul class="messages"><li class="error">Judging for this category has closed. Scores can no longer be submitted or changed.</li></ul>
 {% endif %}
+
 <div class="card">
   <h2>Submission Details</h2>
   <div class="detail-row"><div class="k">Organization</div><div class="v">{{ nomination.organization_name }}</div></div>
@@ -150,9 +151,109 @@
 </div>
 {% endif %}
 
-<div class="card center">
-  <a href="{% url 'jury:submit_review' nomination.pk %}" class="btn">
-    {% if existing_review and existing_review.is_submitted %}View / Update My Review{% else %}Score This Nomination{% endif %}
-  </a>
+<h2 style="margin-top:28px;">Score This Nomination</h2>
+
+{% if existing_review and existing_review.is_submitted %}
+<div class="card" style="border-color: var(--success);">
+  <p class="small" style="color: var(--success); margin:0;">You already submitted a score of {{ existing_review.total_score }}/100 for this nomination on {{ existing_review.submitted_at|date:"d M Y, H:i" }}. You may update and resubmit below.</p>
 </div>
+{% endif %}
+
+<div class="card">
+  {% if judging_closed %}
+    <p class="muted small">Scoring is closed for this category.</p>
+  {% else %}
+  <form method="post" action="{% url 'jury:submit_review' nomination.pk %}">
+    {% csrf_token %}
+    <div class="score-rows">
+      <div class="score-row">
+        <div class="score-row-label">
+          <label for="{{ form.achievement_score.id_for_label }}">{{ form.achievement_score.label }}</label>
+          <div class="score-max">out of 35 — weight 35%</div>
+        </div>
+        <div class="slider-row">
+          {{ form.achievement_score }}
+          <input type="number" class="slider-value slider-number" min="0" max="35" step="1" value="{{ form.achievement_score.value|default:0 }}" data-target="{{ form.achievement_score.id_for_label }}">
+        </div>
+      </div>
+      <div class="score-row">
+        <div class="score-row-label">
+          <label for="{{ form.methodology_score.id_for_label }}">{{ form.methodology_score.label }}</label>
+          <div class="score-max">out of 20 — weight 20%</div>
+        </div>
+        <div class="slider-row">
+          {{ form.methodology_score }}
+          <input type="number" class="slider-value slider-number" min="0" max="20" step="1" value="{{ form.methodology_score.value|default:0 }}" data-target="{{ form.methodology_score.id_for_label }}">
+        </div>
+      </div>
+      <div class="score-row">
+        <div class="score-row-label">
+          <label for="{{ form.creativity_score.id_for_label }}">{{ form.creativity_score.label }}</label>
+          <div class="score-max">out of 10 — weight 10%</div>
+        </div>
+        <div class="slider-row">
+          {{ form.creativity_score }}
+          <input type="number" class="slider-value slider-number" min="0" max="10" step="1" value="{{ form.creativity_score.value|default:0 }}" data-target="{{ form.creativity_score.id_for_label }}">
+        </div>
+      </div>
+      <div class="score-row">
+        <div class="score-row-label">
+          <label for="{{ form.execution_score.id_for_label }}">{{ form.execution_score.label }}</label>
+          <div class="score-max">out of 35 — weight 35%</div>
+        </div>
+        <div class="slider-row">
+          {{ form.execution_score }}
+          <input type="number" class="slider-value slider-number" min="0" max="35" step="1" value="{{ form.execution_score.value|default:0 }}" data-target="{{ form.execution_score.id_for_label }}">
+        </div>
+      </div>
+    </div>
+
+    <div class="field mt">
+      <label for="{{ form.comments.id_for_label }}">{{ form.comments.label }}</label>
+      {{ form.comments }}
+    </div>
+
+    {% for field in form %}
+      {% for error in field.errors %}<p class="small" style="color:#e69488;">{{ field.label }}: {{ error }}</p>{% endfor %}
+    {% endfor %}
+
+    <div class="flex-between mt">
+      <button type="submit" name="action" value="save" class="btn btn-ghost">Save Draft</button>
+      <button type="submit" name="action" value="submit" class="btn">Submit Final Score</button>
+    </div>
+  </form>
+  {% endif %}
+</div>
+
+<script>
+  (function () {
+    var sliders = document.querySelectorAll('.score-slider');
+    sliders.forEach(function (slider) {
+      var numberBox = slider.parentElement.querySelector('.slider-number');
+
+      var syncFromSlider = function () {
+        numberBox.value = slider.value;
+        var pct = ((slider.value - slider.min) / (slider.max - slider.min)) * 100;
+        slider.style.setProperty('--fill-pct', pct + '%');
+      };
+
+      var syncFromNumber = function () {
+        var min = parseInt(slider.min, 10);
+        var max = parseInt(slider.max, 10);
+        var val = parseInt(numberBox.value, 10);
+        if (isNaN(val)) { val = min; }
+        val = Math.max(min, Math.min(max, val));
+        numberBox.value = val;
+        slider.value = val;
+        var pct = ((val - min) / (max - min)) * 100;
+        slider.style.setProperty('--fill-pct', pct + '%');
+      };
+
+      slider.addEventListener('input', syncFromSlider);
+      numberBox.addEventListener('input', syncFromNumber);
+      numberBox.addEventListener('blur', syncFromNumber);
+      syncFromSlider();
+    });
+  })();
+</script>
 {% endblock %}

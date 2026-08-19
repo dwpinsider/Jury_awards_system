@@ -8,7 +8,6 @@ from .decorators import juror_required
 from .forms import JuryReviewForm
 from .models import JuryReview, RecentlyViewed
 
-
 def _score_distribution(scores):
     """Buckets a list of total_score() values (0-100) into 4 ranges for the
     dashboard's mini bar chart. Returns a list of dicts with a pre-computed
@@ -181,8 +180,10 @@ def nomination_detail(request, pk):
         'video_documents': video_documents,
         'image_documents': image_documents,
         'other_documents': other_documents,
+        'media_count': len(video_documents) + len(image_documents) + len(other_documents),
         'existing_review': existing_review,
         'judging_closed': not nomination.category.is_judging_open(),
+        'form': JuryReviewForm(instance=existing_review),
     })
 
 
