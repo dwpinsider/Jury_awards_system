@@ -1,0 +1,40 @@
+{% extends "admin/base_site.html" %}
+{% block content %}
+<p>This is the internal scoring rubric. <strong>Jurors never see these weight percentages</strong> — they only see a plain {{ score_min }}–{{ score_max }} slider per criterion. This page is for the secretariat's reference only.</p>
+
+<p>Every criterion has a <strong>mandatory floor of {{ score_min }}</strong> — a juror can raise a score above {{ score_min }} but the interface will not let them go below it. Maximum per criterion is {{ score_max }}.</p>
+
+<table style="width:100%; border-collapse: collapse; margin: 20px 0;">
+  <thead>
+    <tr style="text-align:left; border-bottom: 1px solid #ccc;">
+      <th style="padding:8px;">Criterion</th>
+      <th style="padding:8px;">Juror-facing scale</th>
+      <th style="padding:8px;">Weight</th>
+      <th style="padding:8px;">Contribution to /100 total</th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for row in rows %}
+    <tr style="border-bottom: 1px solid #eee;">
+      <td style="padding:8px;">{{ row.label }}</td>
+      <td style="padding:8px;">{{ score_min }}–{{ score_max }}</td>
+      <td style="padding:8px; font-weight:bold;">{{ row.weight }}%</td>
+      <td style="padding:8px;">score × {{ row.multiplier }} (max {{ row.weight }} points)</td>
+    </tr>
+    {% endfor %}
+  </tbody>
+  <tfoot>
+    <tr style="border-top: 2px solid #333;">
+      <td style="padding:8px; font-weight:bold;" colspan="3">Total</td>
+      <td style="padding:8px; font-weight:bold;">out of 100</td>
+    </tr>
+  </tfoot>
+</table>
+
+<p><strong>Worked example:</strong> a juror who scores every criterion at the floor ({{ score_min }}/{{ score_max }}) gives a total of
+{{ score_min }}&times;3.5 + {{ score_min }}&times;2.0 + {{ score_min }}&times;1.0 + {{ score_min }}&times;3.5 = <strong>60/100</strong>.
+A juror who scores every criterion at the maximum ({{ score_max }}/{{ score_max }}) gives <strong>100/100</strong>.
+So the realistic range for any single review is <strong>60–100</strong>, never lower — matching the mandatory floor.</p>
+
+<p><a href="../">&larr; Back to Jury Reviews</a></p>
+{% endblock %}

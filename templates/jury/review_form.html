@@ -19,41 +19,41 @@
       <div class="score-row">
         <div class="score-row-label">
           <label for="{{ form.achievement_score.id_for_label }}">{{ form.achievement_score.label }}</label>
-          <div class="score-max">out of 35 — weight 35%</div>
+          <div class="score-max">Minimum score: 6</div>
         </div>
         <div class="slider-row">
           {{ form.achievement_score }}
-          <input type="number" class="slider-value slider-number" min="0" max="35" step="1" value="{{ form.achievement_score.value|default:0 }}" data-target="{{ form.achievement_score.id_for_label }}">
+          <input type="number" class="slider-value slider-number" min="6" max="10" step="1" value="{{ form.achievement_score.value|default:6 }}" data-target="{{ form.achievement_score.id_for_label }}">
         </div>
       </div>
       <div class="score-row">
         <div class="score-row-label">
           <label for="{{ form.methodology_score.id_for_label }}">{{ form.methodology_score.label }}</label>
-          <div class="score-max">out of 20 — weight 20%</div>
+          <div class="score-max">Minimum score: 6</div>
         </div>
         <div class="slider-row">
           {{ form.methodology_score }}
-          <input type="number" class="slider-value slider-number" min="0" max="20" step="1" value="{{ form.methodology_score.value|default:0 }}" data-target="{{ form.methodology_score.id_for_label }}">
+          <input type="number" class="slider-value slider-number" min="6" max="10" step="1" value="{{ form.methodology_score.value|default:6 }}" data-target="{{ form.methodology_score.id_for_label }}">
         </div>
       </div>
       <div class="score-row">
         <div class="score-row-label">
           <label for="{{ form.creativity_score.id_for_label }}">{{ form.creativity_score.label }}</label>
-          <div class="score-max">out of 10 — weight 10%</div>
+          <div class="score-max">Minimum score: 6</div>
         </div>
         <div class="slider-row">
           {{ form.creativity_score }}
-          <input type="number" class="slider-value slider-number" min="0" max="10" step="1" value="{{ form.creativity_score.value|default:0 }}" data-target="{{ form.creativity_score.id_for_label }}">
+          <input type="number" class="slider-value slider-number" min="6" max="10" step="1" value="{{ form.creativity_score.value|default:6 }}" data-target="{{ form.creativity_score.id_for_label }}">
         </div>
       </div>
       <div class="score-row">
         <div class="score-row-label">
           <label for="{{ form.execution_score.id_for_label }}">{{ form.execution_score.label }}</label>
-          <div class="score-max">out of 35 — weight 35%</div>
+          <div class="score-max">Minimum score: 6</div>
         </div>
         <div class="slider-row">
           {{ form.execution_score }}
-          <input type="number" class="slider-value slider-number" min="0" max="35" step="1" value="{{ form.execution_score.value|default:0 }}" data-target="{{ form.execution_score.id_for_label }}">
+          <input type="number" class="slider-value slider-number" min="6" max="10" step="1" value="{{ form.execution_score.value|default:6 }}" data-target="{{ form.execution_score.id_for_label }}">
         </div>
       </div>
     </div>

@@ -6,32 +6,44 @@ from django.utils import timezone
 class JuryReview(models.Model):
     """A single juror's score + comments for a single nomination.
 
-    Weighting matches the official judging rubric:
-      Achievement & Outcome        -> out of 35
-      Methodology of service/project -> out of 20
-      Creativity & Innovation      -> out of 10
-      Execution of service/project -> out of 35
-      (Total out of 100)
+    Each criterion is scored on a 0-10 scale, with a MANDATORY FLOOR of 6 —
+    a juror can raise a score above 6 but never drop below it. Scores are
+    then weighted into a 0-100 total using the official rubric:
+      Achievement & Outcome          -> 35% weight (score/10 * 35)
+      Methodology of service/project -> 20% weight (score/10 * 20)
+      Creativity & Innovation        -> 10% weight (score/10 * 10)
+      Execution of service/project   -> 35% weight (score/10 * 35)
+    The weights themselves are NOT shown to jurors in the scoring UI —
+    they only see a plain 0-10 scale per criterion. Weights are visible to
+    the secretariat via the "Scoring Guide" admin page.
     """
+
+    SCORE_MIN = 6
+    SCORE_MAX = 10
+
+    WEIGHT_ACHIEVEMENT = 3.5   # 35% of 100, expressed as a multiplier of a /10 score
+    WEIGHT_METHODOLOGY = 2.0   # 20%
+    WEIGHT_CREATIVITY = 1.0    # 10%
+    WEIGHT_EXECUTION = 3.5     # 35%
 
     juror = models.ForeignKey('accounts.Juror', on_delete=models.CASCADE, related_name='reviews')
     nomination = models.ForeignKey('awards.Nomination', on_delete=models.CASCADE, related_name='jury_reviews')
 
     achievement_score = models.PositiveSmallIntegerField(
-        validators=[MinValueValidator(0), MaxValueValidator(35)],
-        help_text='Achievement and outcome (out of 35)',
+        validators=[MinValueValidator(SCORE_MIN), MaxValueValidator(SCORE_MAX)],
+        help_text='Achievement and outcome (6–10, minimum 6 mandatory)',
     )
     methodology_score = models.PositiveSmallIntegerField(
-        validators=[MinValueValidator(0), MaxValueValidator(20)],
-        help_text='Methodology of the service / project (out of 20)',
+        validators=[MinValueValidator(SCORE_MIN), MaxValueValidator(SCORE_MAX)],
+        help_text='Methodology of the service / project (6–10, minimum 6 mandatory)',
     )
     creativity_score = models.PositiveSmallIntegerField(
-        validators=[MinValueValidator(0), MaxValueValidator(10)],
-        help_text='Creativity and innovation (out of 10)',
+        validators=[MinValueValidator(SCORE_MIN), MaxValueValidator(SCORE_MAX)],
+        help_text='Creativity and innovation (6–10, minimum 6 mandatory)',
     )
     execution_score = models.PositiveSmallIntegerField(
-        validators=[MinValueValidator(0), MaxValueValidator(35)],
-        help_text='Execution of the service / project (out of 35)',
+        validators=[MinValueValidator(SCORE_MIN), MaxValueValidator(SCORE_MAX)],
+        help_text='Execution of the service / project (6–10, minimum 6 mandatory)',
     )
 
     comments = models.TextField(blank=True, help_text="Juror's overall experience / remarks on this entry")
@@ -49,11 +61,12 @@ class JuryReview(models.Model):
         return f'{self.juror} -> {self.nomination} ({self.total_score()}/100)'
 
     def total_score(self):
-        return (
-            (self.achievement_score or 0)
-            + (self.methodology_score or 0)
-            + (self.creativity_score or 0)
-            + (self.execution_score or 0)
+        """Weighted total out of 100, computed from the four 0-10 scores."""
+        return round(
+            (self.achievement_score or 0) * self.WEIGHT_ACHIEVEMENT
+            + (self.methodology_score or 0) * self.WEIGHT_METHODOLOGY
+            + (self.creativity_score or 0) * self.WEIGHT_CREATIVITY
+            + (self.execution_score or 0) * self.WEIGHT_EXECUTION
         )
 
     def mark_submitted(self):

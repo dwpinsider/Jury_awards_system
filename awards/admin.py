@@ -128,7 +128,7 @@ class NominationAdmin(admin.ModelAdmin):
     change_list_template = 'admin/awards/nomination_change_list.html'
     list_display = (
         'organization_name', 'category', 'nominee_full_name', 'award_tier_badge',
-        'is_visible_to_jury', 'review_count', 'average_score', 'created_at',
+        'is_visible_to_jury', 'review_count', 'average_score', 'scorecard_link', 'created_at',
     )
     list_filter = ('category', 'award_tier', 'is_visible_to_jury')
     search_fields = ('organization_name', 'nominee_full_name', 'contact_person', 'email')
@@ -154,6 +154,13 @@ class NominationAdmin(admin.ModelAdmin):
     def award_tier_badge(self, obj):
         return obj.get_award_tier_display() if obj.award_tier else '—'
 
+    @admin.display(description='Scorecard')
+    def scorecard_link(self, obj):
+        from django.utils.html import format_html
+        from django.urls import reverse
+        url = reverse('admin:awards_nomination_scorecard', args=[obj.pk])
+        return format_html('<a href="{}">View Scorecard</a>', url)
+
     def get_urls(self):
         urls = super().get_urls()
         custom = [
@@ -161,8 +168,46 @@ class NominationAdmin(admin.ModelAdmin):
             path('rankings/', self.admin_site.admin_view(self.rankings_view), name='awards_nomination_rankings'),
             path('winners/', self.admin_site.admin_view(self.winners_view), name='awards_nomination_winners'),
             path('analytics/', self.admin_site.admin_view(self.analytics_view), name='awards_nomination_analytics'),
+            path('<int:pk>/scorecard/', self.admin_site.admin_view(self.scorecard_view), name='awards_nomination_scorecard'),
         ]
         return custom + urls
+
+    def scorecard_view(self, request, pk):
+        """Admin-only visual scorecard for one nomination: overall gauge +
+        every juror's individual review with per-criterion bars and
+        comments. Jurors have no way to reach this — it lives entirely
+        under /admin/, which they have no login for."""
+        from django.shortcuts import get_object_or_404
+        from jury.models import JuryReview
+
+        nomination = get_object_or_404(Nomination, pk=pk)
+        reviews = JuryReview.objects.filter(
+            nomination=nomination, is_submitted=True
+        ).select_related('juror').order_by('-submitted_at')
+        # total_score() is a computed Python property, not a DB field, so
+        # sort in Python (highest score first) after fetching.
+        reviews = sorted(reviews, key=lambda r: r.total_score(), reverse=True)
+        # Precompute bar-width percentages (score is 0-10, bar wants 0-100)
+        # rather than doing string-concatenation math in the template.
+        for r in reviews:
+            r.achievement_pct = (r.achievement_score or 0) * 10
+            r.methodology_pct = (r.methodology_score or 0) * 10
+            r.creativity_pct = (r.creativity_score or 0) * 10
+            r.execution_pct = (r.execution_score or 0) * 10
+
+        overall = nomination.average_score()
+        overall_pct = round(overall) if overall is not None else 0
+
+        context = dict(
+            self.admin_site.each_context(request),
+            title=f'Jury Scorecard — {nomination.organization_name}',
+            nomination=nomination,
+            reviews=reviews,
+            overall=overall,
+            overall_pct=overall_pct,
+            opts=self.model._meta,
+        )
+        return TemplateResponse(request, 'admin/awards/nomination_scorecard.html', context)
 
     def import_csv(self, request):
         result = _run_import(
@@ -270,8 +315,15 @@ class NominationAdmin(admin.ModelAdmin):
             cat_noms = cat.nominations.filter(is_visible_to_jury=True)
             cat_nom_count = cat_noms.count()
             cat_reviews = submitted_reviews.filter(nomination__in=cat_noms).count()
+            # Weighted total, matching JuryReview.total_score() — NOT a plain
+            # sum of the four raw 0-10 fields (that would only max out at 40).
             avg = submitted_reviews.filter(nomination__in=cat_noms).aggregate(
-                avg=Avg(F('achievement_score') + F('methodology_score') + F('creativity_score') + F('execution_score'))
+                avg=Avg(
+                    F('achievement_score') * 3.5
+                    + F('methodology_score') * 2.0
+                    + F('creativity_score') * 1.0
+                    + F('execution_score') * 3.5
+                )
             )['avg']
             category_rows.append({
                 'category': cat,
