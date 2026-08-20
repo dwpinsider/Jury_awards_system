@@ -160,6 +160,43 @@ def nomination_list(request, slug):
 
 
 @juror_required
+def all_nominations(request):
+    """Every nomination across every category currently open and assigned
+    to this juror, in one flat list — this is what "Total Nominations" on
+    the dashboard links to, so clicking it shows the actual 18 (or however
+    many) nominations directly instead of the Categories page.
+    Pass ?status=pending or ?status=reviewed to filter — "Pending Review"
+    on the dashboard links here with ?status=pending, so that count (e.g.
+    11) also opens directly onto exactly those 11 nominations."""
+    juror = request.juror
+    categories = juror.categories_queryset().filter(is_open_for_judging=True)
+    nominations = Nomination.objects.filter(
+        category__in=categories, is_visible_to_jury=True
+    ).select_related('category').order_by('category__name', 'organization_name')
+
+    reviewed_ids = set(
+        JuryReview.objects.filter(juror=juror, nomination__in=nominations, is_submitted=True)
+        .values_list('nomination_id', flat=True)
+    )
+
+    status = request.GET.get('status', 'all')
+    if status == 'pending':
+        nominations = [n for n in nominations if n.id not in reviewed_ids]
+    elif status == 'reviewed':
+        nominations = [n for n in nominations if n.id in reviewed_ids]
+    else:
+        status = 'all'
+
+    results = [{'nomination': n, 'reviewed': n.id in reviewed_ids} for n in nominations]
+
+    return render(request, 'jury/all_nominations.html', {
+        'juror': juror,
+        'results': results,
+        'status': status,
+    })
+
+
+@juror_required
 def search_nominations(request):
     """Search by organization name, nominee name, or category name — across
     every category this juror has access to (not just one at a time)."""

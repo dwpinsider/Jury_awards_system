@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block title %}All Nominations{% endblock %}
+{% block content %}
+<h1 class="display">
+  {% if status == 'pending' %}Pending Nominations{% elif status == 'reviewed' %}Reviewed Nominations{% else %}All Nominations{% endif %}
+</h1>
+<p class="muted small">
+  {% if status == 'pending' %}{{ results|length }} nomination{{ results|length|pluralize }} still waiting for your review.
+  {% elif status == 'reviewed' %}{{ results|length }} nomination{{ results|length|pluralize }} you've already reviewed.
+  {% else %}Every nomination across all {{ results|length }} assigned to you, in one list.
+  {% endif %}
+</p>
+
+<div class="card" style="padding:0; overflow-x:auto; margin-top:16px;">
+  <table class="entries">
+    <thead>
+      <tr>
+        <th>Organization</th>
+        <th>Nominee</th>
+        <th>Category</th>
+        <th>Status</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in results %}
+      <tr>
+        <td>{{ item.nomination.organization_name }}</td>
+        <td>{{ item.nomination.nominee_full_name|default:"—" }}</td>
+        <td>{{ item.nomination.category.name }}</td>
+        <td>
+          {% if item.reviewed %}
+          <span class="badge badge-done">Reviewed</span>
+          {% else %}
+          <span class="badge badge-pending">Pending</span>
+          {% endif %}
+        </td>
+        <td><a href="{% url 'jury:nomination_detail' item.nomination.pk %}" class="btn btn-ghost btn-sm">View</a></td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="5" class="muted center" style="padding:30px;">No nominations assigned to you yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

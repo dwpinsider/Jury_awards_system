@@ -33,7 +33,7 @@
     <div class="num">{{ category_count }}</div>
     <div class="label">Categories Assigned</div>
   </a>
-  <a href="{% url 'jury:category_list' %}" class="stat-card stat-card-link">
+  <a href="{% url 'jury:all_nominations' %}" class="stat-card stat-card-link">
     <div class="num">{{ total_nominations }}</div>
     <div class="label">Total Nominations</div>
   </a>
@@ -41,7 +41,7 @@
     <div class="num">{{ submitted_count }}</div>
     <div class="label">Reviews Submitted</div>
   </a>
-  <a href="{% url 'jury:category_list' %}" class="stat-card stat-card-link">
+  <a href="{% url 'jury:all_nominations' %}?status=pending" class="stat-card stat-card-link">
     <div class="num">{{ pending_count }}</div>
     <div class="label">Pending Review</div>
   </a>
@@ -106,17 +106,7 @@
   <a href="{% url 'jury:nomination_list' category.slug %}" class="cat-card">
     <span class="cat-tag">{{ category.tag_level_label }}</span>
     <h3 style="font-size:1.05rem;">{{ category.name }}</h3>
-    <div class="cat-count">
-      {% if category.total > 0 %}
-        {% if category.pending > 0 %}
-          <span class="cat-count-pending">{{ category.pending }} pending</span> · {{ category.reviewed }} reviewed
-        {% else %}
-          <span class="cat-count-done">✓ All {{ category.total }} reviewed</span>
-        {% endif %}
-      {% else %}
-        No nominations yet
-      {% endif %}
-    </div>
+    <div class="cat-count">{{ category.total }} nomination{{ category.total|pluralize }}</div>
   </a>
   {% empty %}
   <p class="muted">No categories have been assigned to you yet.</p>
