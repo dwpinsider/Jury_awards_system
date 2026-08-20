@@ -2,6 +2,7 @@ from django.contrib import admin, messages
 from django.urls import path
 from django.shortcuts import redirect
 from django.template.response import TemplateResponse
+from django.core.exceptions import PermissionDenied
 
 from .models import Juror, OTPCode
 from .csv_import import import_jurors_from_csv, JUROR_CSV_COLUMNS
@@ -29,6 +30,8 @@ class JurorAdmin(admin.ModelAdmin):
         return custom + urls
 
     def import_csv(self, request):
+        if not request.user.has_perm('accounts.add_juror'):
+            raise PermissionDenied
         if request.method == 'POST':
             form = CSVUploadForm(request.POST, request.FILES)
             if form.is_valid():

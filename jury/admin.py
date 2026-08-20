@@ -4,6 +4,7 @@ from django.contrib import admin
 from django.http import HttpResponse
 from django.urls import path
 from django.template.response import TemplateResponse
+from django.core.exceptions import PermissionDenied
 
 from .models import JuryReview, RecentlyViewed
 
@@ -68,6 +69,8 @@ class JuryReviewAdmin(admin.ModelAdmin):
     def scoring_guide_view(self, request):
         """Admin-only reference page explaining the scoring rubric and
         weights — this is intentionally NOT shown to jurors."""
+        if not request.user.has_perm('jury.view_juryreview'):
+            raise PermissionDenied
         rows = [
             {'label': 'Achievement and Outcome', 'weight': 35, 'multiplier': JuryReview.WEIGHT_ACHIEVEMENT},
             {'label': 'Methodology of the Service / Project', 'weight': 20, 'multiplier': JuryReview.WEIGHT_METHODOLOGY},

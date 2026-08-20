@@ -150,6 +150,22 @@ a:hover { text-decoration: underline; }
   gap: 18px;
 }
 
+/* --- Dashboard stat cards: always 4 across on desktop, not content-driven
+   wrapping like .grid — that's what was pushing "Pending Review" onto its
+   own row once the cards got wide enough that only 3 fit per auto-fill row. --- */
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 18px;
+  margin: 28px 0;
+}
+@media (max-width: 900px) {
+  .stats-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 480px) {
+  .stats-grid { grid-template-columns: 1fr; }
+}
+
 .stat-card {
   background: var(--panel);
   border: 1px solid var(--line);

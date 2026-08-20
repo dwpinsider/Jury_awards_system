@@ -3,6 +3,7 @@ from django.urls import path, reverse
 from django.shortcuts import redirect
 from django.template.response import TemplateResponse
 from django.db.models import Q
+from django.core.exceptions import PermissionDenied
 import csv
 from django.http import HttpResponse
 
@@ -12,6 +13,16 @@ from .csv_import import (
     import_categories_from_csv, import_nominations_from_csv,
     CATEGORY_CSV_COLUMNS, NOMINATION_CSV_COLUMNS,
 )
+
+
+def _require_perm(request, perm):
+    """Raises PermissionDenied (-> Django's standard 403 page) unless the
+    logged-in user has this specific permission. Needed because our custom
+    admin pages (Rankings, Winners, Analytics, Scorecard, CSV import) sit
+    outside Django's normal per-model permission checks — admin_view() only
+    confirms the user is staff, not that they hold any particular permission."""
+    if not request.user.has_perm(perm):
+        raise PermissionDenied
 
 
 def export_categories_as_csv(modeladmin, request, queryset):
@@ -97,6 +108,7 @@ class CategoryAdmin(admin.ModelAdmin):
         return custom + urls
 
     def import_csv(self, request):
+        _require_perm(request, 'awards.add_category')
         result = _run_import(
             request, import_categories_from_csv, CATEGORY_CSV_COLUMNS,
             'Import Categories from CSV', 'admin:awards_category_changelist',
@@ -177,6 +189,7 @@ class NominationAdmin(admin.ModelAdmin):
         every juror's individual review with per-criterion bars and
         comments. Jurors have no way to reach this — it lives entirely
         under /admin/, which they have no login for."""
+        _require_perm(request, 'awards.view_nomination')
         from django.shortcuts import get_object_or_404
         from jury.models import JuryReview
 
@@ -210,6 +223,7 @@ class NominationAdmin(admin.ModelAdmin):
         return TemplateResponse(request, 'admin/awards/nomination_scorecard.html', context)
 
     def import_csv(self, request):
+        _require_perm(request, 'awards.add_nomination')
         result = _run_import(
             request, import_nominations_from_csv, NOMINATION_CSV_COLUMNS,
             'Import Nominations from CSV', 'admin:awards_nomination_changelist',
@@ -229,6 +243,7 @@ class NominationAdmin(admin.ModelAdmin):
         Read-only — this is the tool the secretariat uses to *decide* winners.
         The category dropdown filter (?category=<id>) narrows the list.
         """
+        _require_perm(request, 'awards.view_nomination')
         category_id = request.GET.get('category')
         categories = Category.objects.all().order_by('order', 'name')
         selected_category = None
@@ -259,6 +274,7 @@ class NominationAdmin(admin.ModelAdmin):
     def winners_view(self, request):
         """Only nominations that already have an award_tier set — the
         published-looking final results list, grouped by category."""
+        _require_perm(request, 'awards.view_nomination')
         categories = Category.objects.all().order_by('order', 'name')
         tier_order = {code: i for i, (code, _label) in enumerate(Nomination.AWARD_TIER_CHOICES)}
 
@@ -283,6 +299,7 @@ class NominationAdmin(admin.ModelAdmin):
         """High-level management dashboard: overall completion, per-category
         completion, per-juror workload, and a leaderboard of top-scoring
         nominations. Read-only."""
+        _require_perm(request, 'awards.view_nomination')
         from django.db.models import Avg, Count as DCount, F, Q as DQ
         from accounts.models import Juror
         from jury.models import JuryReview
