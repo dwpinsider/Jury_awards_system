@@ -1,0 +1,36 @@
+{% extends "staff/base.html" %}
+{% block title %}Winners{% endblock %}
+{% block nav_winners %}active{% endblock %}
+{% block content %}
+<h1 class="display">Winners</h1>
+<p class="muted small">Nominations with a declared result, grouped by category.</p>
+
+{% for group in groups %}
+<h2 style="margin-top:28px;">{{ group.category.name }}</h2>
+<div class="card" style="padding:0; overflow-x:auto;">
+  <table class="entries">
+    <thead>
+      <tr>
+        <th>Result</th>
+        <th>Organization</th>
+        <th>Nominee</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for nom in group.nominations %}
+      <tr>
+        <td data-label="Result"><strong>{{ nom.get_award_tier_display }}</strong></td>
+        <td data-label="Organization">{{ nom.organization_name }}</td>
+        <td data-label="Nominee">{{ nom.nominee_full_name|default:"—" }}</td>
+        <td><a href="{% url 'staff:scorecard' nom.pk %}" class="btn btn-ghost btn-sm">Scorecard</a>
+          <a href="{% url 'staff:edit_result' nom.pk %}?next={% url 'staff:winners' %}" class="btn btn-ghost btn-sm">Edit Result</a></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% empty %}
+<p class="muted">No winners declared yet.</p>
+{% endfor %}
+{% endblock %}

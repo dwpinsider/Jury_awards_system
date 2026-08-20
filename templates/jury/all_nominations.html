@@ -25,10 +25,10 @@
     <tbody>
       {% for item in results %}
       <tr>
-        <td>{{ item.nomination.organization_name }}</td>
-        <td>{{ item.nomination.nominee_full_name|default:"—" }}</td>
-        <td>{{ item.nomination.category.name }}</td>
-        <td>
+        <td data-label="Organization">{{ item.nomination.organization_name }}</td>
+        <td data-label="Nominee">{{ item.nomination.nominee_full_name|default:"—" }}</td>
+        <td data-label="Category">{{ item.nomination.category.name }}</td>
+        <td data-label="Status">
           {% if item.reviewed %}
           <span class="badge badge-done">Reviewed</span>
           {% else %}

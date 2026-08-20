@@ -1,0 +1,33 @@
+{% extends "staff/base.html" %}
+{% load static %}
+{% block title %}Team Login{% endblock %}
+{% block container_class %}wrap-narrow{% endblock %}
+{% block content_logged_out %}
+<div class="center" style="margin-bottom:24px;">
+  <img src="{% static 'images/govhr-logo-full.png' %}" alt="GCC GOV HR & Youth Awards" class="login-logo">
+  <div class="login-kicker">GOV HR & YOUTH AWARDS · TEAM PORTAL</div>
+  <h1 class="display" style="margin-top:6px;">Team Login</h1>
+  <p class="muted small">Sign in with the email address and password you were given.</p>
+</div>
+
+<div class="card">
+  <form method="post">
+    {% csrf_token %}
+    <div class="field">
+      <label for="id_username">Email address</label>
+      {{ form.username }}
+    </div>
+    <div class="field" style="margin-top:14px;">
+      <label for="id_password">Password</label>
+      {{ form.password }}
+    </div>
+    {% if form.errors %}
+    <p class="small" style="color:#e69488; margin-top:10px;">Incorrect email or password. Please try again.</p>
+    {% endif %}
+    <button type="submit" class="btn btn-block" style="margin-top:18px;">Log In</button>
+  </form>
+</div>
+
+<p class="muted small center"><a href="{% url 'staff:password_reset' %}">Forgot your password?</a></p>
+<p class="muted small center">Trouble logging in? Contact the awards secretariat at <a href="mailto:info@qnainternational.com">info@qnainternational.com</a>.</p>
+{% endblock %}

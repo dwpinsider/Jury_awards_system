@@ -1,0 +1,51 @@
+{% extends "staff/base.html" %}
+{% block title %}Jury Reviews{% endblock %}
+{% block nav_jury_reviews %}active{% endblock %}
+{% block content %}
+<h1 class="display">Jury Reviews</h1>
+<p class="muted small">Every submitted score, across every juror — an audit trail.</p>
+
+<form method="get" class="card" style="margin:16px 0; display:flex; gap:10px; flex-wrap:wrap;">
+  <select name="juror" class="input" style="flex:1; min-width:180px;" onchange="this.form.submit()">
+    <option value="">All jurors</option>
+    {% for j in jurors %}
+    <option value="{{ j.pk }}" {% if selected_juror == j.pk|stringformat:"s" %}selected{% endif %}>{{ j.full_name }}</option>
+    {% endfor %}
+  </select>
+  <select name="category" class="input" style="flex:1; min-width:180px;" onchange="this.form.submit()">
+    <option value="">All categories</option>
+    {% for cat in categories %}
+    <option value="{{ cat.pk }}" {% if selected_category == cat.pk|stringformat:"s" %}selected{% endif %}>{{ cat.name }}</option>
+    {% endfor %}
+  </select>
+</form>
+
+<div class="card" style="padding:0; overflow-x:auto;">
+  <table class="entries">
+    <thead>
+      <tr>
+        <th>Juror</th>
+        <th>Nomination</th>
+        <th>Category</th>
+        <th>Total Score</th>
+        <th>Submitted</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for review in reviews %}
+      <tr>
+        <td data-label="Juror">{{ review.juror.full_name }}</td>
+        <td data-label="Nomination">{{ review.nomination.organization_name }}</td>
+        <td data-label="Category">{{ review.nomination.category.name }}</td>
+        <td data-label="Total Score"><strong>{{ review.total_score }}/100</strong></td>
+        <td data-label="Submitted" class="muted small">{{ review.submitted_at|date:"d M Y" }}</td>
+        <td><a href="{% url 'staff:scorecard' review.nomination.pk %}" class="btn btn-ghost btn-sm">Scorecard</a></td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="6" class="muted center" style="padding:30px;">No submitted reviews yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

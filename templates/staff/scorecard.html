@@ -1,0 +1,214 @@
+{% extends "staff/base.html" %}
+{% block title %}Scorecard{% endblock %}
+{% block content %}
+<style>
+  .sc-header {
+    position: relative;
+    overflow: hidden;
+    border-radius: 14px;
+    padding: 36px 32px;
+    margin-bottom: 24px;
+    color: #ffffff;
+    text-align: center;
+    background:
+      radial-gradient(circle at 15% 25%, rgba(228, 201, 122, 0.22) 0%, transparent 35%),
+      radial-gradient(circle at 85% 15%, rgba(181, 137, 60, 0.28) 0%, transparent 40%),
+      radial-gradient(circle at 70% 80%, rgba(212, 172, 95, 0.18) 0%, transparent 38%),
+      radial-gradient(circle at 30% 90%, rgba(181, 137, 60, 0.15) 0%, transparent 30%),
+      linear-gradient(135deg, #0a0805 0%, #1c1509 55%, #0a0805 100%);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.25);
+  }
+  .sc-header h1 {
+    color: #ffffff;
+    font-family: Georgia, 'Times New Roman', serif;
+    font-size: 1.6rem;
+    margin: 0 0 4px;
+  }
+  .sc-header .sc-sub {
+    color: #cfc3a3;
+    font-size: 0.9rem;
+    margin-bottom: 22px;
+  }
+  .sc-gauge {
+    width: 190px;
+    height: 190px;
+    border-radius: 50%;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: conic-gradient(#d4ac5f {{ overall_pct }}%, #3a3220 0);
+  }
+  .sc-gauge-inner {
+    width: 154px;
+    height: 154px;
+    border-radius: 50%;
+    background: #14100a;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  .sc-gauge-value {
+    font-family: Georgia, serif;
+    font-size: 1.6rem;
+    font-weight: 700;
+    color: #ffffff;
+  }
+  .sc-gauge-label {
+    font-size: 0.68rem;
+    letter-spacing: 0.1em;
+    color: #d4ac5f;
+    text-transform: uppercase;
+    margin-top: 4px;
+  }
+
+  .sc-card {
+    background: #ffffff;
+    border: 1px solid #e8ddc4;
+    border-top: 3px solid #b5893c;
+    border-radius: 10px;
+    padding: 24px;
+    margin-bottom: 18px;
+  }
+  .sc-card-top {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+  .sc-avatar {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+    border: 2px solid #d4ac5f;
+  }
+  .sc-avatar-fallback {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #d4ac5f 0%, #b5893c 55%, #96742f 100%);
+    color: #1a1509;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: Georgia, serif;
+    font-weight: 700;
+    font-size: 1.3rem;
+    flex-shrink: 0;
+  }
+  .sc-juror-name {
+    font-weight: 700;
+    font-size: 1.05rem;
+    color: #1f1a10;
+    font-family: Georgia, serif;
+  }
+  .sc-juror-meta {
+    color: #7a6f54;
+    font-size: 0.85rem;
+    margin-top: 2px;
+  }
+  .sc-total-badge {
+    margin-left: auto;
+    background: linear-gradient(135deg, #d4ac5f 0%, #b5893c 55%, #96742f 100%);
+    color: #1a1509;
+    font-weight: 700;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 1rem;
+    flex-shrink: 0;
+  }
+  .sc-bar-row {
+    margin-bottom: 14px;
+  }
+  .sc-bar-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.88rem;
+    color: #333;
+    margin-bottom: 5px;
+  }
+  .sc-bar-track {
+    background: #f0e9d8;
+    border-radius: 999px;
+    height: 8px;
+    overflow: hidden;
+  }
+  .sc-bar-fill {
+    background: linear-gradient(90deg, #d4ac5f, #b5893c);
+    height: 100%;
+    border-radius: 999px;
+  }
+  .sc-comments {
+    background: #faf5e8;
+    border: 1px solid #e8ddc4;
+    border-radius: 8px;
+    padding: 16px 18px;
+    color: #333;
+    font-size: 0.92rem;
+    line-height: 1.5;
+    margin-top: 16px;
+    white-space: pre-line;
+  }
+  .sc-empty {
+    text-align: center;
+    color: #888;
+    padding: 40px;
+  }
+</style>
+
+<div class="sc-header">
+  <h1>Jury Ratings — {{ nomination.organization_name }}</h1>
+  <div class="sc-sub">{{ nomination.category.name }} &middot; {{ reviews|length }} submitted review{{ reviews|length|pluralize }}</div>
+  <div class="sc-gauge">
+    <div class="sc-gauge-inner">
+      <div class="sc-gauge-value">{% if overall is not None %}{{ overall }}{% else %}—{% endif %}<span style="font-size:1rem; font-weight:400;">/100</span></div>
+      <div class="sc-gauge-label">Overall Average</div>
+    </div>
+  </div>
+</div>
+
+{% for review in reviews %}
+<div class="sc-card">
+  <div class="sc-card-top">
+    {% if review.juror.photo %}
+      <img src="{{ review.juror.photo.url }}" alt="{{ review.juror.full_name }}" class="sc-avatar">
+    {% else %}
+      <div class="sc-avatar-fallback">{{ review.juror.full_name|slice:":1" }}</div>
+    {% endif %}
+    <div>
+      <div class="sc-juror-name">{{ review.juror.full_name }}</div>
+      <div class="sc-juror-meta">{{ review.juror.title }}{% if review.juror.title and review.juror.organization %}, {% endif %}{{ review.juror.organization }}</div>
+    </div>
+    <div class="sc-total-badge">{{ review.total_score }}/100</div>
+  </div>
+
+  <div class="sc-bar-row">
+    <div class="sc-bar-label"><span>Achievement and Outcome</span><span>{{ review.achievement_score }}/10</span></div>
+    <div class="sc-bar-track"><div class="sc-bar-fill" style="width: {{ review.achievement_pct }}%;"></div></div>
+  </div>
+  <div class="sc-bar-row">
+    <div class="sc-bar-label"><span>Methodology of the Service / Project</span><span>{{ review.methodology_score }}/10</span></div>
+    <div class="sc-bar-track"><div class="sc-bar-fill" style="width: {{ review.methodology_pct }}%;"></div></div>
+  </div>
+  <div class="sc-bar-row">
+    <div class="sc-bar-label"><span>Creativity and Innovation</span><span>{{ review.creativity_score }}/10</span></div>
+    <div class="sc-bar-track"><div class="sc-bar-fill" style="width: {{ review.creativity_pct }}%;"></div></div>
+  </div>
+  <div class="sc-bar-row">
+    <div class="sc-bar-label"><span>Execution of the Service / Project</span><span>{{ review.execution_score }}/10</span></div>
+    <div class="sc-bar-track"><div class="sc-bar-fill" style="width: {{ review.execution_pct }}%;"></div></div>
+  </div>
+
+  {% if review.comments %}
+  <div class="sc-comments">{{ review.comments }}</div>
+  {% endif %}
+</div>
+{% empty %}
+<div class="sc-card sc-empty">No submitted reviews yet for this nomination.</div>
+{% endfor %}
+
+<p><a href="{% url 'staff:nominations' %}">&larr; Back to Nominations</a></p>
+{% endblock %}

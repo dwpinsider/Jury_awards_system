@@ -922,6 +922,10 @@ input.slider-number::-webkit-inner-spin-button {
 }
 .quick-search-row .input { flex: 1; }
 .quick-search-row .btn { flex-shrink: 0; }
+@media (max-width: 480px) {
+  .quick-search-row { flex-direction: column; }
+  .quick-search-row .btn { width: 100%; }
+}
 
 /* --- Hero banner (My Dashboard) --- */
 .hero-banner {
@@ -992,7 +996,9 @@ input.slider-number::-webkit-inner-spin-button {
 @media (max-width: 620px) {
   .hero-banner { padding: 32px 24px; }
   .hero-title { font-size: 1.7rem; }
-  .hero-avatar-wrap { position: static; margin-top: 18px; }
+  .hero-avatar-wrap { position: static; margin-top: 18px; transform: none; text-align: center; }
+  .hero-avatar, .hero-avatar-fallback { width: 90px; height: 90px; }
+  .hero-avatar-fallback { font-size: 2rem; }
 }
 
 /* --- Full logo lockup on the login page --- */
@@ -1008,4 +1014,64 @@ input.slider-number::-webkit-inner-spin-button {
   font-weight: 700;
   letter-spacing: 0.14em;
   text-transform: uppercase;
+}
+
+/* --- Mobile-friendly data tables ---
+   Below 700px, table.entries stops being a horizontal-scroll table and
+   becomes a stack of labeled cards instead — each row becomes its own
+   card, each cell shows its column header as a label before the value.
+   Requires each <td> to carry a data-label="..." attribute matching its
+   column header; cells with no data-label (e.g. the trailing action-button
+   column) just render full-width with no label. */
+@media (max-width: 700px) {
+  table.entries, table.entries thead, table.entries tbody,
+  table.entries th, table.entries td, table.entries tr {
+    display: block;
+  }
+  table.entries thead {
+    position: absolute;
+    top: -9999px;
+    left: -9999px;
+  }
+  table.entries tr {
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    margin-bottom: 14px;
+    padding: 4px 14px;
+    background: var(--panel);
+  }
+  table.entries td {
+    border: none;
+    border-bottom: 1px solid var(--line);
+    padding: 10px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    text-align: right;
+  }
+  table.entries td:last-child { border-bottom: none; }
+  table.entries td[data-label]::before {
+    content: attr(data-label);
+    font-weight: 600;
+    color: var(--muted);
+    font-size: 0.78rem;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    text-align: left;
+    flex-shrink: 0;
+  }
+  table.entries td:not([data-label]) {
+    justify-content: center;
+    padding: 12px 0;
+  }
+  /* Cells with multi-line nested content (e.g. org name + category
+     subtitle) look cramped squeezed into a side-by-side flex row — let
+     them stack full-width under their label instead. */
+  table.entries td.entries-cell-block {
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: left;
+    gap: 4px;
+  }
 }

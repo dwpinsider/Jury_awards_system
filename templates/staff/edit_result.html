@@ -1,0 +1,26 @@
+{% extends "staff/base.html" %}
+{% block title %}Edit Result{% endblock %}
+{% block content %}
+<p class="small"><a href="{% if next %}{{ next }}{% else %}{% url 'staff:rankings' %}{% endif %}">← Back</a></p>
+<h1 class="display">Edit Result</h1>
+<p class="muted small">{{ nomination.organization_name }} — {{ nomination.category.name }}</p>
+
+<div class="card" style="max-width:520px;">
+  <form method="post">
+    {% csrf_token %}
+    <input type="hidden" name="next" value="{{ next }}">
+
+    <div class="field">
+      <label for="{{ form.award_tier.id_for_label }}">{{ form.award_tier.label }}</label>
+      {{ form.award_tier }}
+    </div>
+
+    <div class="field mt">
+      <label for="{{ form.award_notes.id_for_label }}">{{ form.award_notes.label }}</label>
+      {{ form.award_notes }}
+    </div>
+
+    <button type="submit" class="btn btn-block mt">Save Result</button>
+  </form>
+</div>
+{% endblock %}

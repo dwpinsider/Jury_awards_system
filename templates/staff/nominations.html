@@ -1,0 +1,47 @@
+{% extends "staff/base.html" %}
+{% block title %}Nominations{% endblock %}
+{% block nav_nominations %}active{% endblock %}
+{% block content %}
+<h1 class="display">Nominations</h1>
+<p class="muted small">Every submitted nomination, across all categories.</p>
+
+<form method="get" class="card" style="margin: 16px 0; display:flex; gap:10px; flex-wrap:wrap;">
+  <input type="text" name="q" value="{{ query }}" class="input" placeholder="Search organization, nominee, or category..." style="flex:1; min-width:200px;">
+  <select name="category" class="input" style="flex:0 0 220px;" onchange="this.form.submit()">
+    <option value="">All categories</option>
+    {% for cat in categories %}
+    <option value="{{ cat.pk }}" {% if selected_category == cat.pk|stringformat:"s" %}selected{% endif %}>{{ cat.name }}</option>
+    {% endfor %}
+  </select>
+  <button type="submit" class="btn">Filter</button>
+</form>
+
+<div class="card" style="padding:0; overflow-x:auto;">
+  <table class="entries">
+    <thead>
+      <tr>
+        <th>Organization</th>
+        <th>Nominee</th>
+        <th>Category</th>
+        <th>Avg Score</th>
+        <th>Reviews</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in rows %}
+      <tr>
+        <td data-label="Organization">{{ row.nomination.organization_name }}</td>
+        <td data-label="Nominee">{{ row.nomination.nominee_full_name|default:"—" }}</td>
+        <td data-label="Category">{{ row.nomination.category.name }}</td>
+        <td data-label="Avg Score">{% if row.avg_score is not None %}{{ row.avg_score }}/100{% else %}<span class="muted">—</span>{% endif %}</td>
+        <td data-label="Reviews">{{ row.review_count }}</td>
+        <td><a href="{% url 'staff:scorecard' row.nomination.pk %}" class="btn btn-ghost btn-sm">Scorecard</a></td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="6" class="muted center" style="padding:30px;">No nominations found.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

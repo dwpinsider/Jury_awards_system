@@ -1,0 +1,107 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Team Portal{% endblock %} · GOV HR & Youth Awards</title>
+  <link rel="icon" type="image/png" href="{% static 'images/govhr-emblem.png' %}">
+  <link rel="stylesheet" href="{% static 'css/main.css' %}?v=42">
+</head>
+<body>
+
+{% if request.user.is_authenticated %}
+<div class="mobile-topbar">
+  <button id="menuToggle" class="menu-toggle" aria-label="Open menu">&#9776;</button>
+  <div class="mobile-logo">GOV HR AWARDS</div>
+</div>
+<div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
+<div class="shell">
+  <aside class="sidebar" id="sidebar">
+    <div class="logo">
+      <img src="{% static 'images/govhr-emblem.png' %}" alt="GCC GOV HR & Youth Awards" class="logo-mark-img">
+      <div class="logo-text">GOV HR AWARDS<span>TEAM PORTAL</span></div>
+    </div>
+
+    <div class="sidebar-juror">
+      <div class="sidebar-juror-row">
+        <div class="sidebar-avatar sidebar-avatar-fallback">{{ request.user.get_full_name|default:request.user.username|slice:":1"|upper }}</div>
+        <div>
+          <div class="name">{{ request.user.get_full_name|default:request.user.username }}</div>
+          <div class="role">Team Member</div>
+        </div>
+      </div>
+    </div>
+
+    <nav>
+      <a href="{% url 'staff:nominations' %}" class="{% block nav_nominations %}{% endblock %}">
+        <span class="icon">&#128203;</span> Nominations
+      </a>
+      <a href="{% url 'staff:rankings' %}" class="{% block nav_rankings %}{% endblock %}">
+        <span class="icon">&#127942;</span> Rankings
+      </a>
+      <a href="{% url 'staff:winners' %}" class="{% block nav_winners %}{% endblock %}">
+        <span class="icon">&#9733;</span> Winners
+      </a>
+      <a href="{% url 'staff:analytics' %}" class="{% block nav_analytics %}{% endblock %}">
+        <span class="icon">&#128202;</span> Analytics
+      </a>
+      <a href="{% url 'staff:jury_reviews' %}" class="{% block nav_jury_reviews %}{% endblock %}">
+        <span class="icon">&#9998;</span> Jury Reviews
+      </a>
+      <a href="{% url 'staff:recently_viewed' %}" class="{% block nav_recently_viewed %}{% endblock %}">
+        <span class="icon">&#128065;</span> Recently Viewed
+      </a>
+    </nav>
+
+    <div class="sidebar-footer">
+      <form method="post" action="{% url 'staff:logout' %}" style="margin:0;">
+        {% csrf_token %}
+        <button type="submit" class="sidebar-logout-btn">&#10148; Logout</button>
+      </form>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="main-content">
+      {% if messages %}
+      <ul class="messages">
+        {% for message in messages %}<li class="{{ message.tags }}">{{ message }}</li>{% endfor %}
+      </ul>
+      {% endif %}
+      {% block content %}{% endblock %}
+    </div>
+  </main>
+</div>
+
+<script>
+  (function () {
+    var sidebar = document.getElementById('sidebar');
+    var backdrop = document.getElementById('sidebarBackdrop');
+    var toggle = document.getElementById('menuToggle');
+    function closeSidebar() { sidebar.classList.remove('open'); backdrop.classList.remove('open'); }
+    function openSidebar() { sidebar.classList.add('open'); backdrop.classList.add('open'); }
+    toggle.addEventListener('click', function () {
+      if (sidebar.classList.contains('open')) { closeSidebar(); } else { openSidebar(); }
+    });
+    backdrop.addEventListener('click', closeSidebar);
+    sidebar.querySelectorAll('nav a, .sidebar-footer button').forEach(function (link) {
+      link.addEventListener('click', closeSidebar);
+    });
+  })();
+</script>
+
+{% else %}
+  <div class="{% block container_class %}wrap{% endblock %}">
+    {% if messages %}
+    <ul class="messages">
+      {% for message in messages %}<li class="{{ message.tags }}">{{ message }}</li>{% endfor %}
+    </ul>
+    {% endif %}
+    {% block content_logged_out %}{% endblock %}
+  </div>
+{% endif %}
+
+</body>
+</html>

@@ -1,0 +1,32 @@
+{% extends "staff/base.html" %}
+{% block title %}Recently Viewed{% endblock %}
+{% block nav_recently_viewed %}active{% endblock %}
+{% block content %}
+<h1 class="display">Recently Viewed</h1>
+<p class="muted small">A live feed of which nominations jurors have been looking at, across the whole panel.</p>
+
+<div class="card" style="padding:0; overflow-x:auto; margin-top:16px;">
+  <table class="entries">
+    <thead>
+      <tr>
+        <th>Juror</th>
+        <th>Nomination</th>
+        <th>Category</th>
+        <th>Viewed</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for item in recent %}
+      <tr>
+        <td data-label="Juror">{{ item.juror.full_name }}</td>
+        <td data-label="Nomination">{{ item.nomination.organization_name }}</td>
+        <td data-label="Category">{{ item.nomination.category.name }}</td>
+        <td data-label="Viewed" class="muted small">{{ item.viewed_at|date:"d M Y, H:i" }}</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="4" class="muted center" style="padding:30px;">No activity yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

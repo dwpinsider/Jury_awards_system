@@ -20,10 +20,10 @@
     <tbody>
       {% for nomination in nominations %}
       <tr>
-        <td>{{ nomination.organization_name }}</td>
-        <td>{{ nomination.nominee_full_name|default:"—" }}</td>
-        <td>{{ nomination.city_country|default:"—" }}</td>
-        <td>
+        <td data-label="Organization">{{ nomination.organization_name }}</td>
+        <td data-label="Nominee">{{ nomination.nominee_full_name|default:"—" }}</td>
+        <td data-label="City / Country">{{ nomination.city_country|default:"—" }}</td>
+        <td data-label="Status">
           {% if nomination.id in reviewed_ids %}
           <span class="badge badge-done">Reviewed</span>
           {% else %}

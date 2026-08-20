@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'accounts',
     'awards',
     'jury',
+    'staff',
 ]
 
 MIDDLEWARE = [
@@ -97,6 +98,15 @@ else:
     }
 
 
+# Login by username still works everywhere (e.g. /admin/ for superusers),
+# but the "staff" team portal also accepts login by email address via
+# staff.auth_backends.EmailBackend — Django tries each backend in order
+# until one succeeds, so both keep working side by side.
+AUTHENTICATION_BACKENDS = [
+    'django.contrib.auth.backends.ModelBackend',
+    'staff.auth_backends.EmailBackend',
+]
+
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
     {'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator'},
@@ -142,3 +152,8 @@ OTP_VALIDITY_MINUTES = 10
 OTP_RESEND_COOLDOWN_SECONDS = 60
 
 LOGIN_URL = '/accounts/login/'
+# Used by the staff portal's Django-auth-based login (django.contrib.auth's
+# LoginView) after a successful sign-in with no ?next= param — Django
+# defaults this to /accounts/profile/, which doesn't exist in this project.
+# The jury OTP login flow is entirely custom and doesn't use this setting.
+LOGIN_REDIRECT_URL = 'staff:nominations'

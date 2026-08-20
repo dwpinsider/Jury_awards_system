@@ -1,0 +1,74 @@
+{% extends "staff/base.html" %}
+{% block title %}Analytics{% endblock %}
+{% block nav_analytics %}active{% endblock %}
+{% block content %}
+<h1 class="display">Analytics</h1>
+<p class="muted small">Overall judging progress and workload across all categories and jurors.</p>
+
+<div class="stats-grid" style="margin: 20px 0;">
+  <div class="stat-card"><div class="num">{{ total_categories }}</div><div class="label">Categories</div></div>
+  <div class="stat-card"><div class="num">{{ total_nominations }}</div><div class="label">Nominations</div></div>
+  <div class="stat-card"><div class="num">{{ total_jurors }}</div><div class="label">Active Jurors</div></div>
+  <div class="stat-card"><div class="num">{{ total_reviews_submitted }}/{{ possible_assignments }}</div><div class="label">Reviews Submitted</div></div>
+</div>
+<div class="stat-card center" style="max-width:220px; margin-bottom:24px;">
+  <div class="num">{{ overall_completion_pct }}%</div>
+  <div class="label">Overall Complete</div>
+</div>
+
+<h2>Completion by Category</h2>
+<div class="card" style="padding:0; overflow-x:auto;">
+  <table class="entries">
+    <thead><tr><th>Category</th><th>Nominations</th><th>Reviews Submitted</th><th>Avg Score</th></tr></thead>
+    <tbody>
+      {% for row in category_rows %}
+      <tr>
+        <td data-label="Category">{{ row.category.name }}</td>
+        <td data-label="Nominations">{{ row.nomination_count }}</td>
+        <td data-label="Reviews Submitted">{{ row.review_count }}</td>
+        <td data-label="Avg Score">{% if row.avg_score is not None %}{{ row.avg_score }}/100{% else %}<span class="muted">—</span>{% endif %}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<h2 style="margin-top:28px;">Juror Workload <span class="muted small">(least complete first)</span></h2>
+<div class="card" style="padding:0; overflow-x:auto;">
+  <table class="entries">
+    <thead><tr><th>Juror</th><th>Assigned</th><th>Completed</th><th>% Complete</th></tr></thead>
+    <tbody>
+      {% for row in juror_rows %}
+      <tr>
+        <td data-label="Juror">{{ row.juror.full_name }}<div class="small muted">{{ row.juror.email }}</div></td>
+        <td data-label="Assigned">{{ row.assigned }}</td>
+        <td data-label="Completed">{{ row.done }}</td>
+        <td data-label="% Complete" style="{% if row.pct < 50 %}color:var(--danger); font-weight:bold;{% endif %}">{{ row.pct }}%</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="4" class="muted center" style="padding:20px;">No active jurors yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<h2 style="margin-top:28px;">Top 10 Highest-Scoring Nominations</h2>
+<div class="card" style="padding:0; overflow-x:auto;">
+  <table class="entries">
+    <thead><tr><th>Rank</th><th>Organization</th><th>Category</th><th>Avg Score</th><th>Reviews</th></tr></thead>
+    <tbody>
+      {% for nom in top_nominations %}
+      <tr>
+        <td data-label="Rank">{{ forloop.counter }}</td>
+        <td data-label="Organization">{{ nom.organization_name }}</td>
+        <td data-label="Category">{{ nom.category.name }}</td>
+        <td data-label="Avg Score"><strong>{{ nom.average_score }}/100</strong></td>
+        <td data-label="Reviews">{{ nom.review_count }}</td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="5" class="muted center" style="padding:20px;">No submitted reviews yet.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
