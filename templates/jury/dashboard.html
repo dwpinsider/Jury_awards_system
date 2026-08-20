@@ -106,7 +106,17 @@
   <a href="{% url 'jury:nomination_list' category.slug %}" class="cat-card">
     <span class="cat-tag">{{ category.tag_level_label }}</span>
     <h3 style="font-size:1.05rem;">{{ category.name }}</h3>
-    <div class="cat-count">{{ category.nomination_count }} nomination{{ category.nomination_count|pluralize }}</div>
+    <div class="cat-count">
+      {% if category.total > 0 %}
+        {% if category.pending > 0 %}
+          <span class="cat-count-pending">{{ category.pending }} pending</span> · {{ category.reviewed }} reviewed
+        {% else %}
+          <span class="cat-count-done">✓ All {{ category.total }} reviewed</span>
+        {% endif %}
+      {% else %}
+        No nominations yet
+      {% endif %}
+    </div>
   </a>
   {% empty %}
   <p class="muted">No categories have been assigned to you yet.</p>

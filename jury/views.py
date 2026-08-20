@@ -32,13 +32,33 @@ def _score_distribution(scores):
 @juror_required
 def dashboard(request):
     juror = request.juror
-    categories = juror.categories_queryset().filter(is_open_for_judging=True)
+    categories = juror.categories_queryset().filter(is_open_for_judging=True).annotate(
+        total=Count('nominations', filter=Q(nominations__is_visible_to_jury=True), distinct=True),
+        reviewed=Count(
+            'nominations__jury_reviews',
+            filter=Q(
+                nominations__is_visible_to_jury=True,
+                nominations__jury_reviews__juror=juror,
+                nominations__jury_reviews__is_submitted=True,
+            ),
+            distinct=True,
+        ),
+    )
+    for cat in categories:
+        cat.pending = max(cat.total - cat.reviewed, 0)
 
-    total_nominations = Nomination.objects.filter(
-        category__in=categories, is_visible_to_jury=True
-    ).count()
-    reviews = JuryReview.objects.filter(juror=juror)
-    submitted_reviews = reviews.filter(is_submitted=True)
+    # Scope BOTH total_nominations and submitted_count to the exact same
+    # nomination set — only nominations in categories currently assigned to
+    # and open for this juror. Previously submitted_count counted every
+    # review the juror had ever submitted, with no such scoping, so a
+    # review left over from a category that's since closed (or been
+    # unassigned from them) would silently deflate "Pending" below its
+    # true value.
+    visible_nominations = Nomination.objects.filter(category__in=categories, is_visible_to_jury=True)
+    total_nominations = visible_nominations.count()
+    submitted_reviews = JuryReview.objects.filter(
+        juror=juror, is_submitted=True, nomination__in=visible_nominations
+    )
     submitted_count = submitted_reviews.count()
     pending_count = max(total_nominations - submitted_count, 0)
     progress_pct = round((submitted_count / total_nominations) * 100) if total_nominations else 0
@@ -82,7 +102,16 @@ def dashboard(request):
 def category_list(request):
     juror = request.juror
     categories = juror.categories_queryset().filter(is_open_for_judging=True).annotate(
-        total=Count('nominations', filter=Q(nominations__is_visible_to_jury=True))
+        total=Count('nominations', filter=Q(nominations__is_visible_to_jury=True), distinct=True),
+        reviewed=Count(
+            'nominations__jury_reviews',
+            filter=Q(
+                nominations__is_visible_to_jury=True,
+                nominations__jury_reviews__juror=juror,
+                nominations__jury_reviews__is_submitted=True,
+            ),
+            distinct=True,
+        ),
     )
 
     level = request.GET.get('level', 'all')
@@ -98,6 +127,10 @@ def category_list(request):
         sector = 'all'
 
     categories = categories.order_by('order', 'name')
+    # pending isn't something the DB can annotate directly (it's total -
+    # reviewed), so compute it in Python after the query runs.
+    for cat in categories:
+        cat.pending = max(cat.total - cat.reviewed, 0)
 
     return render(request, 'jury/category_list.html', {
         'juror': juror,

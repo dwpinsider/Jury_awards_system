@@ -74,6 +74,12 @@ a:hover { text-decoration: underline; }
   font-family: Georgia, serif; font-weight: 700; color: #1a1509;
   flex-shrink: 0;
 }
+.sidebar .logo-mark-img {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
 .sidebar .logo-text {
   font-family: Georgia, serif;
   letter-spacing: 0.05em;
@@ -239,6 +245,8 @@ a:hover { text-decoration: underline; }
   background: rgba(181, 137, 60, 0.06);
 }
 .cat-count { color: var(--text); font-weight: 600; font-size: 0.85rem; margin-top: auto; padding-top: 10px; }
+.cat-count-pending { color: #b5893c; }
+.cat-count-done { color: var(--success); }
 
 table.entries {
   width: 100%;
@@ -985,4 +993,19 @@ input.slider-number::-webkit-inner-spin-button {
   .hero-banner { padding: 32px 24px; }
   .hero-title { font-size: 1.7rem; }
   .hero-avatar-wrap { position: static; margin-top: 18px; }
+}
+
+/* --- Full logo lockup on the login page --- */
+.login-logo {
+  max-width: 300px;
+  width: 100%;
+  height: auto;
+  margin-bottom: 10px;
+}
+.login-kicker {
+  color: #b5893c;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
 }
