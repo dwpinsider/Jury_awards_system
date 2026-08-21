@@ -15,8 +15,11 @@
 </form>
 
 {% for group in groups %}
-<h2 style="margin-top:28px;">{{ group.category.name }}</h2>
-<div class="card" style="padding:0; overflow-x:auto;">
+<div class="rank-section-title">
+  <h2 style="margin:0;">{{ group.category.name }}</h2>
+  <span class="count">{{ group.nominations|length }} nomination{{ group.nominations|length|pluralize }}</span>
+</div>
+<div class="card" style="padding:0; overflow-x:auto; margin-top:12px;">
   <table class="entries">
     <thead>
       <tr>
@@ -38,11 +41,13 @@
         <td data-label="Avg Score">{% if item.1 is not None %}<strong>{{ item.1 }}/100</strong>{% else %}<span class="muted">No submitted reviews yet</span>{% endif %}</td>
         <td data-label="Reviews">{{ item.2 }}</td>
         <td data-label="Result">
-          {% if item.0.award_tier %}<strong>{{ item.0.get_award_tier_display }}</strong>{% else %}<span class="muted">Not decided</span>{% endif %}
+          {% if item.0.award_tier %}<span class="result-pill result-pill-decided">{{ item.0.get_award_tier_display }}</span>{% else %}<span class="result-pill result-pill-pending">Not decided</span>{% endif %}
         </td>
         <td>
-          <a href="{% url 'staff:scorecard' item.0.pk %}" class="btn btn-ghost btn-sm">Scorecard</a>
-          <a href="{% url 'staff:edit_result' item.0.pk %}?next={% url 'staff:rankings' %}" class="btn btn-ghost btn-sm">Edit Result</a>
+          <div class="table-actions">
+            <a href="{% url 'staff:scorecard' item.0.pk %}" class="btn btn-ghost btn-sm">Scorecard</a>
+            <a href="{% url 'staff:edit_result' item.0.pk %}?next={% url 'staff:rankings' %}" class="btn btn-ghost btn-sm">Edit Result</a>
+          </div>
         </td>
       </tr>
       {% endfor %}

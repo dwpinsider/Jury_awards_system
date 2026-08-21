@@ -32,6 +32,7 @@ urlpatterns = [
     ), name='password_reset_complete'),
 
     path('', views.nominations, name='nominations'),
+    path('jurors/', views.jurors, name='jurors'),
     path('rankings/', views.rankings, name='rankings'),
     path('winners/', views.winners, name='winners'),
     path('analytics/', views.analytics, name='analytics'),

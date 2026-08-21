@@ -1,0 +1,43 @@
+{% extends "staff/base.html" %}
+{% block title %}Jurors{% endblock %}
+{% block nav_jurors %}active{% endblock %}
+{% block content %}
+<h1 class="display">Jurors</h1>
+<p class="muted small">Every active juror on the panel, with their current workload.</p>
+
+<form method="get" class="card" style="margin: 16px 0;">
+  <input type="text" name="q" value="{{ query }}" class="input" placeholder="Search by name, email, or organization...">
+</form>
+
+<div class="card" style="padding:0; overflow-x:auto;">
+  <table class="entries">
+    <thead>
+      <tr>
+        <th>Juror</th>
+        <th>Organization</th>
+        <th>Assigned</th>
+        <th>Completed</th>
+        <th>% Complete</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for row in rows %}
+      <tr>
+        <td data-label="Juror" class="entries-cell-block">
+          <span class="row-avatar">{{ row.juror.full_name|slice:":1"|upper }}</span>{{ row.juror.full_name }}
+          <div class="small muted" style="margin-left:38px;">{{ row.juror.email }}</div>
+        </td>
+        <td data-label="Organization">{{ row.juror.organization|default:"—" }}</td>
+        <td data-label="Assigned">{{ row.assigned }}</td>
+        <td data-label="Completed">{{ row.done }}</td>
+        <td data-label="% Complete">
+          <span class="pct-pill {% if row.pct < 50 %}pct-pill-low{% else %}pct-pill-ok{% endif %}">{{ row.pct }}%</span>
+        </td>
+      </tr>
+      {% empty %}
+      <tr><td colspan="5" class="muted center" style="padding:30px;">No jurors found.</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

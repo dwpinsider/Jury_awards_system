@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>{% block title %}Team Portal{% endblock %} · GOV HR & Youth Awards</title>
   <link rel="icon" type="image/png" href="{% static 'images/govhr-emblem.png' %}">
-  <link rel="stylesheet" href="{% static 'css/main.css' %}?v=42">
+  <link rel="stylesheet" href="{% static 'css/main.css' %}?v=47">
 </head>
 <body>
 
@@ -37,6 +37,9 @@
     <nav>
       <a href="{% url 'staff:nominations' %}" class="{% block nav_nominations %}{% endblock %}">
         <span class="icon">&#128203;</span> Nominations
+      </a>
+      <a href="{% url 'staff:jurors' %}" class="{% block nav_jurors %}{% endblock %}">
+        <span class="icon">&#128100;</span> Jurors
       </a>
       <a href="{% url 'staff:rankings' %}" class="{% block nav_rankings %}{% endblock %}">
         <span class="icon">&#127942;</span> Rankings

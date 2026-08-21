@@ -58,6 +58,10 @@ a:hover { text-decoration: underline; }
   padding: 24px 16px;
   display: flex;
   flex-direction: column;
+  height: 100vh;
+  position: sticky;
+  top: 0;
+  overflow: hidden;
 }
 
 .sidebar .logo {
@@ -104,7 +108,11 @@ a:hover { text-decoration: underline; }
 .sidebar-juror .name { font-size: 0.85rem; font-weight: 600; color: var(--sidebar-text); }
 .sidebar-juror .role { font-size: 0.72rem; color: var(--sidebar-muted); margin-top: 2px; }
 
-.sidebar nav { flex: 1; }
+.sidebar nav {
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
+}
 .sidebar nav a {
   display: flex;
   align-items: center;
@@ -135,6 +143,18 @@ a:hover { text-decoration: underline; }
 }
 .sidebar-footer a { color: #ff8a80; opacity: 0.9; }
 .sidebar-footer a:hover { opacity: 1; }
+.sidebar-logout-btn {
+  background: none;
+  border: none;
+  color: #ff8a80;
+  opacity: 0.9;
+  font-size: inherit;
+  font-family: inherit;
+  cursor: pointer;
+  padding: 0;
+  text-align: left;
+}
+.sidebar-logout-btn:hover { opacity: 1; }
 
 .main { flex: 1; min-width: 0; background: var(--page-bg); }
 .main-content { padding: 32px; max-width: 1080px; }
@@ -170,6 +190,78 @@ a:hover { text-decoration: underline; }
 }
 @media (max-width: 480px) {
   .stats-grid { grid-template-columns: 1fr; }
+}
+
+.stats-grid-5 {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 18px;
+  margin: 28px 0;
+}
+@media (max-width: 1100px) {
+  .stats-grid-5 { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 640px) {
+  .stats-grid-5 { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 400px) {
+  .stats-grid-5 { grid-template-columns: 1fr; }
+}
+.stats-grid-5 .stat-card {
+  background: linear-gradient(135deg, #d4ac5f 0%, #b5893c 55%, #96742f 100%);
+  border: none;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.stats-grid-5 .stat-card .num,
+.stats-grid-5 .stat-card .label {
+  color: #1a1509;
+}
+a.stats-grid-5-link {
+  text-decoration: none;
+  color: inherit;
+  display: block;
+}
+a.stats-grid-5-link:hover .stat-card {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 16px rgba(150, 116, 47, 0.35);
+  text-decoration: none;
+}
+
+/* --- Percentage completion pill (Analytics juror workload) --- */
+.pct-pill {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+.pct-pill-low {
+  background: rgba(198, 40, 40, 0.1);
+  color: var(--danger);
+  border: 1px solid rgba(198, 40, 40, 0.3);
+}
+.pct-pill-ok {
+  background: rgba(181, 137, 60, 0.14);
+  color: #8a6526;
+  border: 1px solid rgba(181, 137, 60, 0.4);
+}
+
+/* --- Small initial-circle avatar for juror rows in tables --- */
+.row-avatar {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--gold-gradient);
+  color: #1a1509;
+  font-family: Georgia, serif;
+  font-weight: 700;
+  font-size: 0.8rem;
+  flex-shrink: 0;
+  margin-right: 8px;
+  vertical-align: middle;
 }
 
 .stat-card {
@@ -262,6 +354,7 @@ table.entries th {
   letter-spacing: 0.06em;
   padding: 10px 12px;
   border-bottom: 1px solid var(--line);
+  white-space: nowrap;
 }
 table.entries td {
   padding: 12px;
@@ -270,6 +363,56 @@ table.entries td {
   color: var(--text);
 }
 table.entries tr:hover td { background: var(--panel-2); }
+
+/* --- Action button group (e.g. "Scorecard" + "Edit Result" side by side) --- */
+.table-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: nowrap;
+  justify-content: flex-end;
+}
+.table-actions .btn { white-space: nowrap; }
+
+/* --- Result / status pills (Winner, Gold, Not decided, etc.) --- */
+.result-pill {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.result-pill-decided {
+  background: rgba(181, 137, 60, 0.14);
+  color: #8a6526;
+  border: 1px solid rgba(181, 137, 60, 0.4);
+}
+.result-pill-pending {
+  background: var(--panel-2);
+  color: var(--muted);
+  border: 1px solid var(--line);
+  font-weight: 500;
+}
+
+/* --- Category section header (Rankings / Winners pages) --- */
+.rank-section-title {
+  margin-top: 32px;
+  margin-bottom: 0;
+  padding-bottom: 10px;
+  border-bottom: 2px solid #b5893c;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+}
+.rank-section-title .count {
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+}
 
 .badge {
   display: inline-block;
@@ -1064,6 +1207,10 @@ input.slider-number::-webkit-inner-spin-button {
   table.entries td:not([data-label]) {
     justify-content: center;
     padding: 12px 0;
+  }
+  .table-actions {
+    justify-content: center;
+    width: 100%;
   }
   /* Cells with multi-line nested content (e.g. org name + category
      subtitle) look cramped squeezed into a side-by-side flex row — let

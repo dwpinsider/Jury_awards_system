@@ -6,8 +6,11 @@
 <p class="muted small">Nominations with a declared result, grouped by category.</p>
 
 {% for group in groups %}
-<h2 style="margin-top:28px;">{{ group.category.name }}</h2>
-<div class="card" style="padding:0; overflow-x:auto;">
+<div class="rank-section-title">
+  <h2 style="margin:0;">{{ group.category.name }}</h2>
+  <span class="count">{{ group.nominations|length }} declared</span>
+</div>
+<div class="card" style="padding:0; overflow-x:auto; margin-top:12px;">
   <table class="entries">
     <thead>
       <tr>
@@ -20,11 +23,15 @@
     <tbody>
       {% for nom in group.nominations %}
       <tr>
-        <td data-label="Result"><strong>{{ nom.get_award_tier_display }}</strong></td>
+        <td data-label="Result"><span class="result-pill result-pill-decided">{{ nom.get_award_tier_display }}</span></td>
         <td data-label="Organization">{{ nom.organization_name }}</td>
         <td data-label="Nominee">{{ nom.nominee_full_name|default:"—" }}</td>
-        <td><a href="{% url 'staff:scorecard' nom.pk %}" class="btn btn-ghost btn-sm">Scorecard</a>
-          <a href="{% url 'staff:edit_result' nom.pk %}?next={% url 'staff:winners' %}" class="btn btn-ghost btn-sm">Edit Result</a></td>
+        <td>
+          <div class="table-actions">
+            <a href="{% url 'staff:scorecard' nom.pk %}" class="btn btn-ghost btn-sm">Scorecard</a>
+            <a href="{% url 'staff:edit_result' nom.pk %}?next={% url 'staff:winners' %}" class="btn btn-ghost btn-sm">Edit Result</a>
+          </div>
+        </td>
       </tr>
       {% endfor %}
     </tbody>

@@ -234,3 +234,31 @@ def edit_result(request, pk):
         'form': form,
         'next': request.GET.get('next', ''),
     })
+
+
+@_staff_required
+def jurors(request):
+    """Every active juror, with their assigned/completed workload — the
+    actual people, not just their submitted reviews (that's Jury Reviews)."""
+    from accounts.models import Juror
+
+    query = request.GET.get('q', '').strip()
+    jurors_qs = Juror.objects.filter(is_active=True).order_by('full_name')
+    if query:
+        jurors_qs = jurors_qs.filter(
+            Q(full_name__icontains=query) | Q(email__icontains=query) | Q(organization__icontains=query)
+        )
+
+    rows = []
+    for juror in jurors_qs:
+        juror_categories = juror.categories_queryset().filter(is_open_for_judging=True)
+        assigned = Nomination.objects.filter(category__in=juror_categories, is_visible_to_jury=True).count()
+        done = JuryReview.objects.filter(juror=juror, is_submitted=True).count()
+        rows.append({
+            'juror': juror,
+            'assigned': assigned,
+            'done': done,
+            'pct': round((done / assigned) * 100) if assigned else 0,
+        })
+
+    return render(request, 'staff/jurors.html', {'rows': rows, 'query': query})
